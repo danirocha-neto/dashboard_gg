@@ -1,0 +1,2022 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard · Gente & Gestão</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#090b0f;--bg2:#0c0f15;
+  --sur:#12161f;--sur2:#171c28;--sur3:#1d2233;
+  --bd:#232b3a;--bd2:#2b3448;
+  --tx:#eef1f8;--tx2:#9aa3bc;--tx3:#60708a;--tx4:#3d4560;
+  --g:#1ed97a;--gdim:rgba(30,217,122,.10);--gbd:rgba(30,217,122,.28);
+  --y:#f5c840;--ydim:rgba(245,200,64,.09);--ybd:rgba(245,200,64,.28);
+  --r:#f04560;--rdim:rgba(240,69,96,.09);--rbd:rgba(240,69,96,.28);
+  --ac:#4f8cff;--ac2:rgba(79,140,255,.11);--acbd:rgba(79,140,255,.26);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg);color:var(--tx);
+  font-family:'Montserrat',sans-serif;
+  min-height:100vh;padding:28px 24px 80px;
+  background-image:
+    radial-gradient(ellipse 65% 30% at 90% -2%,rgba(79,140,255,.055) 0%,transparent 60%),
+    radial-gradient(ellipse 40% 25% at 4% 95%,rgba(167,139,250,.03) 0%,transparent 60%);
+}
+
+/* ── HEADER ── */
+.hd{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:22px}
+.hd-t{font-size:24px;font-weight:900;letter-spacing:-1px;line-height:1.05;
+  background:linear-gradient(125deg,#eef1f8 40%,#4f8cff 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hd-s{font-size:10px;font-weight:600;color:var(--tx3);text-transform:uppercase;letter-spacing:.14em;margin-top:5px}
+.hd-r{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.hd-d{font-size:10px;font-weight:600;color:var(--tx3);text-transform:uppercase;letter-spacing:.07em}
+.sync-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--g);margin-right:5px;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* ── CTRL ROW ── */
+.ctrl-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr)) 1.4fr 1.1fr auto;gap:8px;margin-bottom:22px;align-items:stretch}
+@media(max-width:1300px){.ctrl-row{grid-template-columns:repeat(4,1fr) 1fr 1fr;}.btn-graphs{grid-column:1/-1}}
+@media(max-width:760px){.ctrl-row{grid-template-columns:1fr 1fr}.ind-filter-wrap,.month-filter-wrap,.btn-graphs{grid-column:1/-1}}
+
+/* ── SUMMARY CARDS (compactos, mesma altura dos dropdowns) ── */
+.sc{
+  background:var(--sur);border:1px solid var(--bd);border-radius:11px;
+  padding:9px 12px;position:relative;overflow:hidden;
+  transition:transform .15s,border-color .15s,box-shadow .15s;
+  cursor:pointer;user-select:none;
+  display:flex;align-items:center;justify-content:space-between;gap:6px;
+  min-height:46px;
+}
+.sc:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,0,0,.35)}
+.sc.active.sg{border-color:var(--g);box-shadow:0 0 0 1px var(--gbd) inset,0 4px 16px rgba(30,217,122,.12)}
+.sc.active.sy{border-color:var(--y);box-shadow:0 0 0 1px var(--ybd) inset,0 4px 16px rgba(245,200,64,.10)}
+.sc.active.sr{border-color:var(--r);box-shadow:0 0 0 1px var(--rbd) inset,0 4px 16px rgba(240,69,96,.10)}
+.sc.active.sp{border-color:var(--ac);box-shadow:0 0 0 1px var(--acbd) inset,0 4px 16px rgba(79,140,255,.10)}
+.sc::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.sc.sg::before{background:var(--g)}.sc.sy::before{background:var(--y)}
+.sc.sr::before{background:var(--r)}.sc.sp::before{background:var(--ac)}
+.sc-lbl{font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--tx3);line-height:1.25;max-width:60px}
+.sc-n{font-size:22px;font-weight:900;letter-spacing:-1px;line-height:1;flex-shrink:0}
+.sc.sg .sc-n{color:var(--g)}.sc.sy .sc-n{color:var(--y)}.sc.sr .sc-n{color:var(--r)}.sc.sp .sc-n{color:var(--ac)}
+
+/* ── ÁREA PANEL ── */
+.area-panel{background:var(--sur);border:1px solid var(--bd);border-radius:13px;padding:12px 14px;display:flex;flex-direction:column;justify-content:space-between;min-width:190px}
+.area-panel-label{font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:.15em;color:var(--tx3);margin-bottom:9px}
+.area-pills{display:flex;flex-wrap:wrap;gap:5px}
+.pill{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;padding:4px 10px;border-radius:20px;border:1px solid var(--bd2);background:var(--sur2);color:var(--tx3);cursor:pointer;transition:all .16s;user-select:none;white-space:nowrap}
+.pill:hover{border-color:var(--ac);color:var(--ac)}
+.pill.active{background:var(--ac);border-color:var(--ac);color:#fff}
+.pill-chave{background:rgba(245,200,64,.08);border-color:rgba(245,200,64,.25);color:var(--y)}
+.pill-chave.active{background:var(--y);border-color:var(--y);color:#000}
+
+/* ── GRID ── */
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+@media(max-width:1200px){.grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:820px){.grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:500px){.grid{grid-template-columns:1fr}}
+
+/* ── CARD ── */
+.card{background:var(--sur);border:1px solid var(--bd);border-radius:15px;overflow:hidden;transition:transform .2s,box-shadow .2s}
+.card:hover{transform:translateY(-3px);box-shadow:0 12px 40px rgba(0,0,0,.5)}
+.card.sg{border-color:var(--gbd);box-shadow:0 0 0 1px var(--gbd) inset}
+.card.sy{border-color:var(--ybd);box-shadow:0 0 0 1px var(--ybd) inset}
+.card.sr{border-color:var(--rbd);box-shadow:0 0 0 1px var(--rbd) inset}
+.card-bar{height:3px}
+.sg .card-bar{background:linear-gradient(90deg,var(--g),rgba(30,217,122,.05))}
+.sy .card-bar{background:linear-gradient(90deg,var(--y),rgba(245,200,64,.05))}
+.sr .card-bar{background:linear-gradient(90deg,var(--r),rgba(240,69,96,.05))}
+.ch{padding:14px 15px 0;display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.ch-l{flex:1;min-width:0}
+.tag{display:inline-block;font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;padding:2px 7px;border-radius:4px;background:var(--sur3);border:1px solid var(--bd2);color:var(--ac);margin-bottom:6px}
+.cname{font-size:12px;font-weight:800;color:var(--tx);line-height:1.3;letter-spacing:-.15px}
+.ch-r{display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0}
+.ch-r-statusline{display:flex;align-items:center;gap:5px}
+.badge{font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;padding:3px 9px;border-radius:20px;white-space:nowrap}
+.sg .badge{background:var(--gdim);color:var(--g);border:1px solid var(--gbd)}
+.sy .badge{background:var(--ydim);color:var(--y);border:1px solid var(--ybd)}
+.sr .badge{background:var(--rdim);color:var(--r);border:1px solid var(--rbd)}
+.pbadge{font-size:8px;font-weight:700;padding:2px 7px;border-radius:20px;background:var(--ac2);color:var(--ac);border:1px solid var(--acbd);cursor:pointer;display:none;white-space:nowrap;transition:all .15s}
+.pbadge:hover{background:var(--ac);color:#fff}
+.pbadge.vis{display:inline-block}
+
+/* ── ROWS ── */
+.rows{padding:11px 15px 0}
+.row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--bd);gap:8px}
+.row:last-child{border-bottom:none}
+.row-left{min-width:0;flex:1}
+.rl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--tx2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rs{font-size:9px;font-weight:500;color:var(--tx3);margin-top:1px;white-space:nowrap}
+.rv{font-size:16px;font-weight:800;letter-spacing:-.4px;color:var(--tx);text-align:right;flex-shrink:0}
+.row.cur .rv{font-size:19px;font-weight:900}
+.row.cur.sg .rv{color:var(--g)}.row.cur.sy .rv{color:var(--y)}.row.cur.sr .rv{color:var(--r)}
+.row.meta .rl{color:var(--tx3);font-size:9px;font-weight:600}.row.meta .rv{font-size:12px;font-weight:600;color:var(--tx3)}
+.row.prev .rv{font-size:15px;font-weight:700;color:var(--tx2)}
+.row.acum .rv{font-size:14px;font-weight:700;color:var(--tx2)}
+.cf{padding:11px 15px 14px;display:flex;gap:7px}
+.btn-ap{flex:1;background:var(--sur3);border:1px solid var(--bd2);border-radius:8px;padding:8px 10px;color:var(--tx2);font-family:'Montserrat',sans-serif;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.11em;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:5px}
+.btn-ap:hover{background:var(--ac);color:#fff;border-color:var(--ac)}
+
+/* ── PLANO SECTION ── */
+.ps{border-top:1px solid var(--bd);padding:12px 15px;background:var(--bg2);animation:fIn .22s ease}
+@keyframes fIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+.ps-title{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.15em;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.sy .ps-title{color:var(--y)}.sr .ps-title{color:var(--r)}
+.plist{display:flex;flex-direction:column;gap:6px;margin-bottom:10px}
+.pi{background:var(--sur2);border:1px solid var(--bd);border-radius:8px;padding:9px 11px}
+.pi-h{display:flex;align-items:center;gap:5px;margin-bottom:4px;flex-wrap:wrap}
+.pi-n{font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--tx3)}
+.pi-ar{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;padding:2px 7px;border-radius:4px;background:var(--ac2);color:var(--ac);border:1px solid var(--acbd)}
+/* status chips */
+.pi-st{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;padding:2px 7px;border-radius:4px;border:1px solid}
+.pi-st.aguardando{background:rgba(96,112,138,.12);color:var(--tx3);border-color:rgba(96,112,138,.25)}
+.pi-st.andamento{background:rgba(79,140,255,.12);color:var(--ac);border-color:rgba(79,140,255,.28)}
+.pi-st.concluido{background:var(--gdim);color:var(--g);border-color:var(--gbd)}
+.pi-st.cancelado{background:var(--rdim);color:var(--r);border-color:var(--rbd)}
+.pi-del{background:none;border:none;color:var(--tx4);cursor:pointer;font-size:13px;padding:0 2px;transition:color .15s;margin-left:auto}
+.pi-edit-btn{background:none;border:none;color:var(--tx3);cursor:pointer;font-size:11px;padding:0 3px;transition:color .15s}
+.pi-edit-btn:hover{color:var(--ac)}
+.pi-del:hover{color:var(--r)}
+.pi-ac{font-size:11px;font-weight:700;color:var(--tx);margin-bottom:3px;line-height:1.35}
+.pi-m{display:flex;gap:8px;flex-wrap:wrap}
+.pi-mi{font-size:9px;font-weight:500;color:var(--tx3)}.pi-mi b{color:var(--tx2);font-weight:600}
+.pft{background:none;border:1px dashed var(--bd2);border-radius:8px;padding:7px;width:100%;color:var(--tx3);font-family:'Montserrat',sans-serif;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.11em;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:5px}
+.pft:hover{border-color:var(--ac);color:var(--ac)}
+.pf{display:none;flex-direction:column;gap:6px;margin-top:9px}
+.pf.open{display:flex}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.fr.full{grid-template-columns:1fr}
+.fl{display:flex;flex-direction:column;gap:3px}
+.fl label{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--tx3)}
+.fl input,.fl textarea,.fl select{background:var(--sur3);border:1px solid var(--bd2);border-radius:6px;padding:7px 9px;color:var(--tx);font-family:'Montserrat',sans-serif;font-size:10px;font-weight:500;outline:none;transition:border-color .15s;width:100%}
+.fl textarea{min-height:52px;resize:none}
+.fl input:focus,.fl textarea:focus,.fl select:focus{border-color:var(--ac)}
+.fl select option{background:var(--sur3)}
+.btn-save{background:var(--ac2);border:1px solid var(--acbd);border-radius:7px;padding:8px;color:var(--ac);font-family:'Montserrat',sans-serif;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.11em;cursor:pointer;transition:all .2s}
+.btn-save:hover{background:var(--ac);color:#fff}
+
+/* ── MODAL ── */
+.mo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:2000;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(8px)}
+.mo.open{display:flex}
+.mbox{background:var(--sur);border:1px solid var(--bd2);border-radius:18px;padding:32px;max-width:760px;width:100%;max-height:90vh;overflow-y:auto;position:relative;animation:mIn .26s cubic-bezier(.34,1.56,.64,1)}
+@keyframes mIn{from{opacity:0;transform:scale(.91) translateY(16px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.mcl{position:absolute;top:16px;right:16px;background:var(--sur3);border:1px solid var(--bd2);border-radius:7px;width:30px;height:30px;color:var(--tx2);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.mcl:hover{color:var(--tx);background:var(--bd2)}
+.mt{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--ac);padding:3px 8px;background:var(--sur3);border:1px solid var(--bd2);border-radius:4px;display:inline-block;margin-bottom:7px}
+.mtt{font-size:21px;font-weight:900;letter-spacing:-.5px;margin-bottom:4px}
+.mrf{font-size:10px;font-weight:500;color:var(--tx3);margin-bottom:20px}
+.msec{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.14em;color:var(--tx3);margin:16px 0 11px;display:flex;align-items:center;gap:8px}
+.msec::after{content:'';flex:1;height:1px;background:var(--bd)}
+
+/* Tabela histórico com coluna de planos */
+.ht{width:100%;border-collapse:collapse;font-size:11px;margin-bottom:6px}
+.ht th{text-align:left;padding:7px 11px;background:var(--sur2);color:var(--tx3);font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;border-bottom:1px solid var(--bd)}
+.ht td{padding:9px 11px;border-bottom:1px solid var(--bd);color:var(--tx2);font-weight:500;vertical-align:middle}
+.ht tr:last-child td{border-bottom:none}
+.ht td.vg{color:var(--g);font-weight:700}.ht td.vy{color:var(--y);font-weight:700}.ht td.vr{color:var(--r);font-weight:700}
+.plan-chip{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;padding:2px 7px;border-radius:4px;background:var(--ac2);color:var(--ac);border:1px solid var(--acbd);white-space:nowrap;display:inline-block;cursor:pointer}
+.plan-chip:hover{background:var(--ac);color:#fff}
+
+/* inline plano dentro da tabela */
+.ht-plan-row td{background:var(--sur2);padding:10px 11px}
+.ht-plan-detail{display:none}
+.ht-plan-detail.open{display:block}
+
+.mpl{display:flex;flex-direction:column;gap:9px}
+.mpc{background:var(--sur2);border:1px solid var(--bd);border-radius:11px;padding:14px 15px}
+.mph{display:flex;align-items:center;gap:7px;margin-bottom:7px;flex-wrap:wrap}
+.mpn{font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--tx3)}
+.mpa{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;padding:2px 8px;border-radius:4px;background:var(--ac2);color:var(--ac);border:1px solid var(--acbd)}
+.mps{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;padding:2px 8px;border-radius:4px;border:1px solid}
+.mps.aguardando{background:rgba(96,112,138,.12);color:var(--tx3);border-color:rgba(96,112,138,.25)}
+.mps.andamento{background:rgba(79,140,255,.12);color:var(--ac);border-color:rgba(79,140,255,.28)}
+.mps.concluido{background:var(--gdim);color:var(--g);border-color:var(--gbd)}
+.mps.cancelado{background:var(--rdim);color:var(--r);border-color:var(--rbd)}
+.mpac{font-size:13px;font-weight:700;color:var(--tx);margin-bottom:9px;line-height:1.3}
+.mpg{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.mpf{background:var(--sur3);border-radius:7px;padding:7px 9px}
+.mpfl{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--tx3);margin-bottom:2px}
+.mpfv{font-size:11px;font-weight:600;color:var(--tx2)}
+.mpfull{grid-column:1/-1}
+
+/* edit status inline */
+.pi-st-sel{background:var(--sur3);border:1px solid var(--bd2);border-radius:4px;padding:2px 6px;color:var(--tx);font-family:'Montserrat',sans-serif;font-size:8px;font-weight:700;outline:none;cursor:pointer}
+
+
+/* ── PLANO CAROUSEL (card view) ── */
+.pcarousel{position:relative;margin-bottom:10px}
+.pcar-track{overflow:hidden;border-radius:8px}
+.pcar-item{display:none}
+.pcar-item.active{display:block}
+.pcar-nav{display:flex;align-items:center;justify-content:space-between;margin-top:6px;gap:6px}
+.pcar-btn{background:var(--sur3);border:1px solid var(--bd2);border-radius:6px;padding:4px 10px;color:var(--tx3);font-family:'Montserrat',sans-serif;font-size:9px;font-weight:700;cursor:pointer;transition:all .15s}
+.pcar-btn:hover{border-color:var(--ac);color:var(--ac)}
+.pcar-btn:disabled{opacity:.3;cursor:default}
+.pcar-counter{font-size:9px;font-weight:600;color:var(--tx3)}
+
+
+/* ── MODAL EDIT HISTORY ── */
+.medit-list{display:flex;flex-direction:column;gap:6px;margin-top:4px}
+.medit-item{background:var(--sur3);border-radius:7px;padding:8px 10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.medit-field{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--tx3)}
+.medit-old{font-size:11px;font-weight:600;color:var(--r)}
+.medit-new{font-size:11px;font-weight:600;color:var(--g)}
+.medit-arrow{color:var(--tx3);font-size:10px}
+.medit-who{font-size:9px;font-weight:500;color:var(--tx3);margin-left:auto}
+
+/* MISC */
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--sur)}::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:3px}
+.loading{text-align:center;padding:70px 20px;font-size:11px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.1em}
+.spin{display:inline-block;width:22px;height:22px;border:2px solid var(--bd2);border-top-color:var(--ac);border-radius:50%;animation:sp .7s linear infinite;margin-bottom:14px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.empty-msg{text-align:center;padding:48px 20px;font-size:12px;font-weight:600;color:var(--tx3);grid-column:1/-1}
+.fb-notice{font-size:10px;font-weight:600;color:var(--y);background:rgba(245,200,64,.08);border:1px solid rgba(245,200,64,.2);border-radius:8px;padding:10px 16px;margin-bottom:18px;display:flex;align-items:center;gap:8px}
+
+/* ══════════════════════════════════════════════════════════════
+   NOVOS COMPONENTES — v7 PROTÓTIPO
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── HEADER: botão de chat ── */
+.hd-r{flex-direction:row;align-items:center;gap:12px}
+.btn-chat{
+  background:linear-gradient(135deg,var(--ac),#a78bfa);
+  border:none;border-radius:10px;padding:9px 16px;
+  color:#fff;font-family:'Montserrat',sans-serif;font-size:10px;font-weight:800;
+  text-transform:uppercase;letter-spacing:.08em;cursor:pointer;
+  display:flex;align-items:center;gap:6px;
+  transition:transform .18s,box-shadow .18s;
+  box-shadow:0 4px 16px rgba(79,140,255,.25);
+}
+.btn-chat:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(79,140,255,.4)}
+.btn-chat-icon{font-size:13px}
+
+/* ── DROPDOWN HIERÁRQUICO DE INDICADORES ── */
+.ind-filter-wrap{position:relative}
+.btn-ind-filter{
+  background:var(--sur);border:1px solid var(--bd);border-radius:11px;
+  padding:0 11px;color:var(--tx2);font-family:'Montserrat',sans-serif;
+  font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;
+  cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:6px;
+  min-height:46px;width:100%;transition:border-color .15s;
+  white-space:nowrap;overflow:hidden;
+}
+.btn-ind-filter span:first-child{overflow:hidden;text-overflow:ellipsis}
+.btn-ind-filter:hover{border-color:var(--ac)}
+.btn-ind-filter.open{border-color:var(--ac)}
+.bif-count{
+  background:var(--ac);color:#fff;border-radius:20px;padding:1px 8px;
+  font-size:9px;font-weight:800;margin-left:4px;
+}
+.bif-chevron{font-size:9px;color:var(--tx3);transition:transform .2s}
+.btn-ind-filter.open .bif-chevron{transform:rotate(180deg)}
+
+.ind-dropdown{
+  display:none;position:absolute;top:calc(100% + 8px);left:0;z-index:500;
+  background:var(--sur);border:1px solid var(--bd2);border-radius:14px;
+  padding:14px;width:340px;max-height:440px;overflow-y:auto;
+  box-shadow:0 16px 48px rgba(0,0,0,.55);
+  animation:ddIn .18s ease;
+}
+.ind-dropdown.open{display:block}
+@keyframes ddIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+
+.ind-dd-actions{display:flex;gap:6px;margin-bottom:10px}
+.ind-dd-btn{
+  flex:1;background:var(--sur3);border:1px solid var(--bd2);border-radius:7px;
+  padding:6px;color:var(--tx2);font-family:'Montserrat',sans-serif;font-size:8px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.06em;cursor:pointer;transition:all .15s;
+}
+.ind-dd-btn:hover{border-color:var(--ac);color:var(--ac)}
+
+.ind-group{margin-bottom:4px;border-radius:8px;overflow:hidden}
+.ind-group-head{
+  display:flex;align-items:center;gap:8px;padding:8px 8px;cursor:pointer;
+  border-radius:7px;transition:background .15s;user-select:none;
+}
+.ind-group-head:hover{background:var(--sur2)}
+.ind-group-head.chave{background:rgba(245,200,64,.06)}
+.ind-group-chevron{font-size:9px;color:var(--tx3);transition:transform .2s;width:10px;flex-shrink:0}
+.ind-group-head.expanded .ind-group-chevron{transform:rotate(90deg)}
+.ind-group-label{
+  font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;
+  color:var(--tx2);flex:1;
+}
+.ind-group-head.chave .ind-group-label{color:var(--y)}
+.ind-group-count{font-size:8px;font-weight:600;color:var(--tx3)}
+
+.ind-checkbox-row{
+  display:flex;align-items:center;gap:8px;padding:6px 8px 6px 28px;
+  border-radius:6px;cursor:pointer;transition:background .15s;
+}
+.ind-checkbox-row:hover{background:var(--sur2)}
+.ind-checkbox-row input[type="checkbox"]{
+  width:14px;height:14px;accent-color:var(--ac);cursor:pointer;flex-shrink:0;
+}
+.ind-checkbox-row label{
+  font-size:10px;font-weight:500;color:var(--tx2);cursor:pointer;flex:1;
+  line-height:1.3;
+}
+.ind-group-items{display:none}
+.ind-group-items.expanded{display:block}
+
+/* ── DROPDOWN DE MÊS ── */
+.month-filter-wrap{position:relative}
+.btn-month-filter{
+  background:var(--sur);border:1px solid var(--bd);border-radius:11px;
+  padding:0 11px;color:var(--tx2);font-family:'Montserrat',sans-serif;
+  font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;
+  cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:6px;
+  min-height:46px;width:100%;transition:border-color .15s;
+  white-space:nowrap;overflow:hidden;
+}
+.btn-month-filter:hover{border-color:var(--ac)}
+.btn-month-filter.open{border-color:var(--ac)}
+
+.month-dropdown{
+  display:none;position:absolute;top:calc(100% + 8px);left:0;z-index:500;
+  background:var(--sur);border:1px solid var(--bd2);border-radius:14px;
+  padding:12px;width:200px;max-height:340px;overflow-y:auto;
+  box-shadow:0 16px 48px rgba(0,0,0,.55);
+  animation:ddIn .18s ease;
+}
+.month-dropdown.open{display:block}
+.month-checkbox-row{
+  display:flex;align-items:center;gap:8px;padding:7px 8px;
+  border-radius:6px;cursor:pointer;transition:background .15s;
+}
+.month-checkbox-row:hover{background:var(--sur2)}
+.month-checkbox-row input[type="checkbox"]{width:14px;height:14px;accent-color:var(--ac);cursor:pointer}
+.month-checkbox-row label{font-size:10px;font-weight:600;color:var(--tx2);cursor:pointer;flex:1;text-transform:uppercase;letter-spacing:.04em}
+.month-dd-clear{
+  width:100%;background:var(--sur3);border:1px solid var(--bd2);border-radius:7px;
+  padding:6px;color:var(--tx3);font-family:'Montserrat',sans-serif;font-size:8px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.06em;cursor:pointer;margin-top:8px;transition:all .15s;
+}
+.month-dd-clear:hover{border-color:var(--r);color:var(--r)}
+
+/* ── BOTÃO DE GRÁFICOS ── */
+.btn-graphs{
+  background:var(--sur);border:1px solid var(--bd);border-radius:11px;
+  padding:0 14px;color:var(--tx2);font-family:'Montserrat',sans-serif;
+  font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;
+  cursor:pointer;display:flex;align-items:center;gap:6px;min-height:46px;
+  white-space:nowrap;transition:all .18s;
+}
+.btn-graphs:hover{border-color:var(--ac);color:var(--ac)}
+.btn-graphs.active{background:var(--ac);border-color:var(--ac);color:#fff}
+
+/* ── TREND ARROW (seta de tendência) ── */
+.trend-arrow{
+  font-size:8px;font-weight:800;padding:3px 7px;border-radius:20px;
+  white-space:nowrap;display:inline-flex;align-items:center;gap:2px;
+  border:1px solid;cursor:default;
+}
+.trend-arrow.up{background:var(--gdim);color:var(--g);border-color:var(--gbd)}
+.trend-arrow.down{background:var(--rdim);color:var(--r);border-color:var(--rbd)}
+.trend-arrow.osc{background:var(--ydim);color:var(--y);border-color:var(--ybd)}
+.trend-arrow.flat{background:rgba(96,112,138,.1);color:var(--tx3);border-color:rgba(96,112,138,.22)}
+
+/* ── GRAPH CARD (substitui card normal no modo gráfico) ── */
+.graph-card{
+  background:var(--sur);border:1px solid var(--bd);border-radius:15px;
+  overflow:hidden;padding:0;
+}
+.graph-card.sg{border-color:var(--gbd);box-shadow:0 0 0 1px var(--gbd) inset}
+.graph-card.sy{border-color:var(--ybd);box-shadow:0 0 0 1px var(--ybd) inset}
+.graph-card.sr{border-color:var(--rbd);box-shadow:0 0 0 1px var(--rbd) inset}
+.graph-card-head{padding:14px 16px 8px}
+.graph-svg-wrap{padding:0 12px 14px}
+.graph-legend{display:flex;gap:14px;padding:0 16px 12px;flex-wrap:wrap}
+.graph-legend-item{display:flex;align-items:center;gap:5px;font-size:8px;font-weight:600;color:var(--tx3);text-transform:uppercase;letter-spacing:.05em}
+.graph-legend-dot{width:7px;height:7px;border-radius:50%}
+
+/* ── SELECTED MONTHS CHIPS (exibição compacta) ── */
+.month-chips{display:flex;gap:4px;flex-wrap:wrap;margin-top:4px}
+.month-chip-mini{font-size:7px;font-weight:700;background:var(--ac2);color:var(--ac);padding:1px 5px;border-radius:3px;text-transform:uppercase}
+
+@media(max-width:1100px){
+  .ind-filter-wrap,.month-filter-wrap{grid-column:span 1}
+}
+
+/* ── COMBO CHART SECTION ── */
+.combo-section{
+  margin-top:28px;padding-top:22px;
+  border-top:1px solid var(--bd);
+}
+.combo-head{
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:12px;margin-bottom:16px;
+}
+.combo-title{
+  font-size:14px;font-weight:900;letter-spacing:-.3px;color:var(--tx);
+  display:flex;align-items:center;gap:8px;
+}
+.combo-title-icon{
+  font-size:11px;background:linear-gradient(135deg,var(--ac),#a78bfa);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.combo-selectors{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.combo-select-wrap{position:relative}
+.combo-select{
+  background:var(--sur);border:1px solid var(--bd);border-radius:9px;
+  padding:7px 28px 7px 10px;color:var(--tx2);font-family:'Montserrat',sans-serif;
+  font-size:10px;font-weight:600;outline:none;cursor:pointer;
+  appearance:none;-webkit-appearance:none;
+  min-width:180px;transition:border-color .15s;
+}
+.combo-select:focus{border-color:var(--ac)}
+.combo-select-wrap::after{
+  content:'▾';position:absolute;right:10px;top:50%;transform:translateY(-50%);
+  font-size:9px;color:var(--tx3);pointer-events:none;
+}
+.combo-select option{background:var(--sur);color:var(--tx2)}
+.combo-add-btn{
+  background:var(--sur3);border:1px solid var(--bd2);border-radius:8px;
+  padding:7px 12px;color:var(--tx3);font-family:'Montserrat',sans-serif;
+  font-size:9px;font-weight:700;cursor:pointer;transition:all .15s;
+  display:flex;align-items:center;gap:4px;
+}
+.combo-add-btn:hover{border-color:var(--ac);color:var(--ac)}
+.combo-add-btn:disabled{opacity:.3;cursor:default}
+.combo-chip{
+  display:flex;align-items:center;gap:6px;
+  padding:5px 10px;border-radius:20px;
+  font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;
+  border:1px solid;
+}
+.combo-chip .combo-chip-x{
+  background:none;border:none;cursor:pointer;font-size:12px;
+  color:inherit;opacity:.7;transition:opacity .15s;padding:0;margin:0;
+}
+.combo-chip .combo-chip-x:hover{opacity:1}
+.combo-chip-toggle{
+  background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);
+  border-radius:4px;padding:1px 6px;cursor:pointer;font-size:8px;font-weight:700;
+  color:inherit;margin:0 2px;transition:all .15s;font-family:'Montserrat',sans-serif;
+}
+.combo-chip-toggle:hover{background:rgba(255,255,255,.18);border-color:rgba(255,255,255,.25)}
+.combo-chip-bar{background:rgba(79,140,255,.1);color:var(--ac);border-color:rgba(79,140,255,.25)}
+.combo-chip-line{background:rgba(167,139,250,.1);color:#a78bfa;border-color:rgba(167,139,250,.25)}
+
+.combo-chart-wrap{
+  background:var(--sur);border:1px solid var(--bd);border-radius:16px;
+  padding:24px 20px 18px;position:relative;overflow:hidden;
+}
+.combo-chart-wrap::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--ac),#a78bfa);
+}
+.combo-empty{
+  text-align:center;padding:48px 20px;
+  font-size:12px;font-weight:600;color:var(--tx3);
+}
+.combo-legend{
+  display:flex;gap:16px;flex-wrap:wrap;margin-top:14px;padding:0 4px;
+}
+.combo-legend-item{
+  display:flex;align-items:center;gap:6px;
+  font-size:9px;font-weight:600;color:var(--tx3);text-transform:uppercase;letter-spacing:.04em;
+}
+.combo-legend-bar{width:14px;height:10px;border-radius:2px;opacity:.8}
+.combo-legend-line{width:18px;height:3px;border-radius:2px;position:relative}
+.combo-legend-line::after{
+  content:'';position:absolute;right:-2px;top:50%;transform:translateY(-50%);
+  width:6px;height:6px;border-radius:50%;background:inherit;
+}
+.combo-axis-label{
+  font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;
+  color:var(--tx3);
+}
+.combo-axis-left{position:absolute;left:6px;top:50%;transform:rotate(-90deg) translateX(-50%);transform-origin:0 0;white-space:nowrap}
+.combo-axis-right{position:absolute;right:6px;top:50%;transform:rotate(90deg) translateX(50%);transform-origin:100% 0;white-space:nowrap}
+
+/* ── CHAT PANEL (protótipo visual) ── */
+.chat-overlay{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:3000;
+}
+.chat-overlay.open{display:block}
+.chat-panel{
+  position:fixed;top:0;right:0;height:100vh;width:400px;max-width:92vw;
+  background:var(--sur);border-left:1px solid var(--bd2);
+  display:flex;flex-direction:column;z-index:3001;
+  transform:translateX(100%);transition:transform .28s cubic-bezier(.32,.72,0,1);
+  box-shadow:-12px 0 40px rgba(0,0,0,.4);
+}
+.chat-panel.open{transform:translateX(0)}
+.chat-head{
+  padding:18px 18px 14px;border-bottom:1px solid var(--bd);
+  display:flex;align-items:center;justify-content:space-between;flex-shrink:0;
+}
+.chat-head-title{display:flex;align-items:center;gap:9px}
+.chat-head-icon{
+  width:30px;height:30px;border-radius:9px;
+  background:linear-gradient(135deg,var(--ac),#a78bfa);
+  display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff;
+}
+.chat-head-text strong{font-size:13px;font-weight:800;color:var(--tx);display:block}
+.chat-head-text span{font-size:9px;font-weight:600;color:var(--tx3);text-transform:uppercase;letter-spacing:.06em}
+.chat-close{
+  background:var(--sur3);border:1px solid var(--bd2);border-radius:7px;
+  width:28px;height:28px;color:var(--tx2);font-size:13px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:all .15s;
+}
+.chat-close:hover{color:var(--tx);background:var(--bd2)}
+
+.chat-body{flex:1;overflow-y:auto;padding:18px;display:flex;flex-direction:column;gap:14px}
+.chat-msg{display:flex;gap:9px;max-width:100%}
+.chat-msg.user{flex-direction:row-reverse}
+.chat-msg-avatar{
+  width:26px;height:26px;border-radius:8px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:12px;
+}
+.chat-msg.ai .chat-msg-avatar{background:linear-gradient(135deg,var(--ac),#a78bfa);color:#fff}
+.chat-msg.user .chat-msg-avatar{background:var(--sur3);color:var(--tx2)}
+.chat-msg-bubble{
+  font-size:11px;font-weight:500;line-height:1.5;color:var(--tx2);
+  background:var(--sur2);border:1px solid var(--bd);border-radius:12px;
+  padding:10px 13px;max-width:78%;
+}
+.chat-msg.user .chat-msg-bubble{background:var(--ac2);border-color:var(--acbd);color:var(--tx)}
+.chat-msg.ai .chat-msg-bubble{border-top-left-radius:4px}
+.chat-msg.user .chat-msg-bubble{border-top-right-radius:4px}
+
+.chat-suggestions{display:flex;flex-direction:column;gap:6px;margin-top:4px}
+.chat-suggestion-btn{
+  background:var(--sur2);border:1px solid var(--bd2);border-radius:9px;
+  padding:8px 11px;color:var(--tx2);font-family:'Montserrat',sans-serif;
+  font-size:10px;font-weight:600;text-align:left;cursor:pointer;transition:all .15s;
+}
+.chat-suggestion-btn:hover{border-color:var(--ac);color:var(--ac);background:var(--ac2)}
+
+.chat-footer{padding:14px 18px;border-top:1px solid var(--bd);flex-shrink:0}
+.chat-input-row{display:flex;gap:8px}
+.chat-input{
+  flex:1;background:var(--sur3);border:1px solid var(--bd2);border-radius:10px;
+  padding:10px 13px;color:var(--tx);font-family:'Montserrat',sans-serif;
+  font-size:11px;font-weight:500;outline:none;transition:border-color .15s;
+}
+.chat-input:focus{border-color:var(--ac)}
+.chat-send{
+  background:linear-gradient(135deg,var(--ac),#a78bfa);border:none;border-radius:10px;
+  width:38px;height:38px;color:#fff;font-size:14px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:transform .15s;
+}
+.chat-send:hover{transform:scale(1.06)}
+.chat-disclaimer{font-size:8px;font-weight:500;color:var(--tx4);text-align:center;margin-top:8px}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="hd">
+  <div>
+    <div class="hd-t">Gente &amp; Gestão</div>
+    <div class="hd-s">Dashboard de Indicadores · <span id="plb">—</span></div>
+  </div>
+  <div class="hd-r">
+    <div class="hd-d"><span class="sync-dot" id="sync-dot"></span>Sync: <span id="upd">—</span></div>
+    <button class="btn-chat" onclick="toggleChatPlaceholder()">
+      <span class="btn-chat-icon">✦</span> Insights AI
+    </button>
+  </div>
+</div>
+
+<!-- Firebase config notice (escondido após configurar) -->
+<div class="fb-notice" id="fb-notice" style="display:none">
+  ⚠ Firebase não configurado. Os planos de ação estão salvos apenas localmente. Siga o guia de configuração do Firebase para habilitar sync em tempo real.
+</div>
+
+<!-- CTRL ROW: summary cards + filtros, tudo em uma linha compacta -->
+<div class="ctrl-row">
+  <div class="sc sg" id="sc-g" onclick="toggleSF('g')">
+    <div class="sc-lbl">Na Meta</div><div class="sc-n" id="cg">—</div>
+  </div>
+  <div class="sc sy" id="sc-y" onclick="toggleSF('y')">
+    <div class="sc-lbl">Atenção</div><div class="sc-n" id="cy">—</div>
+  </div>
+  <div class="sc sr" id="sc-r" onclick="toggleSF('r')">
+    <div class="sc-lbl">Crítico</div><div class="sc-n" id="cr">—</div>
+  </div>
+  <div class="sc sp" id="sc-p" onclick="toggleSF('p')">
+    <div class="sc-lbl">Planos</div><div class="sc-n" id="cp">—</div>
+  </div>
+
+  <div class="ind-filter-wrap">
+    <button class="btn-ind-filter" id="btn-ind-filter" onclick="toggleIndDropdown()">
+      <span id="ind-filter-label">Todos os Indicadores</span>
+      <span class="bif-chevron">▾</span>
+    </button>
+    <div class="ind-dropdown" id="ind-dropdown" onclick="event.stopPropagation()"></div>
+  </div>
+
+  <div class="month-filter-wrap">
+    <button class="btn-month-filter" id="btn-month-filter" onclick="toggleMonthDropdown()">
+      <span id="month-filter-label">Mês Atual</span>
+      <span class="bif-chevron">▾</span>
+    </button>
+    <div class="month-dropdown" id="month-dropdown"></div>
+  </div>
+
+  <button class="btn-graphs" id="btn-graphs" onclick="toggleGraphMode()">
+    <span>📈</span> Gráficos
+  </button>
+</div>
+
+<div class="grid" id="dash">
+  <div class="empty-msg"><div class="spin"></div><br>Carregando...</div>
+</div>
+
+<!-- COMBO CHART SECTION -->
+<div class="combo-section">
+  <div class="combo-head">
+    <div class="combo-title"><span class="combo-title-icon">◆</span> Cruzamento de Métricas</div>
+    <div class="combo-selectors">
+      <div id="combo-chips"></div>
+      <div class="combo-select-wrap">
+        <select class="combo-select" id="combo-metric-select">
+          <option value="">+ Adicionar métrica...</option>
+        </select>
+      </div>
+    </div>
+  </div>
+  <div class="combo-chart-wrap" id="combo-chart-wrap">
+    <div class="combo-empty" id="combo-empty">Selecione 2 ou mais métricas acima para visualizar o cruzamento no gráfico de eixo duplo.</div>
+    <div id="combo-svg-area"></div>
+    <div class="combo-legend" id="combo-legend"></div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="mo" id="mo" onclick="moClick(event)">
+  <div class="mbox">
+    <button class="mcl" onclick="closeMo()">✕</button>
+    <div id="mi"></div>
+  </div>
+</div>
+
+<!-- CHAT PANEL (protótipo visual — sem backend conectado ainda) -->
+<div class="chat-overlay" id="chat-overlay" onclick="closeChatPanel()"></div>
+<div class="chat-panel" id="chat-panel">
+  <div class="chat-head">
+    <div class="chat-head-title">
+      <div class="chat-head-icon">✦</div>
+      <div class="chat-head-text">
+        <strong>Insights AI</strong>
+        <span>Protótipo · sem conexão ativa</span>
+      </div>
+    </div>
+    <button class="chat-close" onclick="closeChatPanel()">✕</button>
+  </div>
+  <div class="chat-body" id="chat-body">
+    <div class="chat-msg ai">
+      <div class="chat-msg-avatar">✦</div>
+      <div class="chat-msg-bubble">
+        Olá, Daniel! Eu posso te ajudar a correlacionar indicadores, identificar tendências e gerar insights a partir dos dados do dashboard. Experimente uma das perguntas abaixo ou digite a sua.
+      </div>
+    </div>
+    <div class="chat-suggestions">
+      <button class="chat-suggestion-btn" onclick="sendChatSuggestion(this)">Por que o Turnover está em queda nos últimos meses?</button>
+      <button class="chat-suggestion-btn" onclick="sendChatSuggestion(this)">Existe correlação entre eNPS e Absenteísmo?</button>
+      <button class="chat-suggestion-btn" onclick="sendChatSuggestion(this)">Quais indicadores estão fora da meta hoje?</button>
+    </div>
+  </div>
+  <div class="chat-footer">
+    <div class="chat-input-row">
+      <input class="chat-input" id="chat-input" type="text" placeholder="Pergunte sobre os indicadores..." onkeydown="if(event.key==='Enter')sendChatMessage()">
+      <button class="chat-send" onclick="sendChatMessage()">➤</button>
+    </div>
+    <div class="chat-disclaimer">Protótipo visual — respostas simuladas, sem IA conectada</div>
+  </div>
+</div>
+
+<!-- Firebase SDK -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, doc, onSnapshot, setDoc, deleteDoc, getDocs }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+// ══════════════════════════════════════════════════════════════
+//  🔧 CONFIGURAÇÃO FIREBASE — substitua pelos seus dados
+//  Siga o guia README-firebase.md para obter esses valores
+// ══════════════════════════════════════════════════════════════
+const FIREBASE_CONFIG = {
+  apiKey:            "AIzaSyBf7Iq4MEUvgFegwJ_U919kr9ILp9V4hec",
+  authDomain:        "dashboard-gg-f163b.firebaseapp.com",
+  projectId:         "dashboard-gg-f163b",
+  storageBucket:     "dashboard-gg-f163b.firebasestorage.app",
+  messagingSenderId: "537084608558",
+  appId:             "1:537084608558:web:c95db94d0354d3a7dbaa6e"
+};
+// ══════════════════════════════════════════════════════════════
+
+const MONTHS=['JANEIRO','FEVEREIRO','MARÇO','ABRIL','MAIO','JUNHO','JULHO','AGOSTO','SETEMBRO','OUTUBRO','NOVEMBRO','DEZEMBRO'];
+const PLAN_AREAS=['DHO','Qualidade','Endomarketing','DP','R&S','Geral','Comercial','Operações','TI','Financeiro','Jurídico','Marketing'];
+const SHEET='https://docs.google.com/spreadsheets/d/e/2PACX-1vTn7jYHWYnEY5lAMye8VWT3a0VD43GCoewkaTo38ip_yafcUN1RizBYR-Jj0hHlPWR8MEAN298CxzbZ/pub?output=csv';
+const SUB_LIST=['DHO','QUALIDADE','ENDOMARKETING','DP','R&S','GERAL'];
+const ST_STATUS={aguardando:'Aguardando Início',andamento:'Em Andamento',concluido:'Concluído',cancelado:'Cancelado'};
+
+let INDS=[], PL={}, db=null, unsubFirebase=null;
+let activeSF=null;
+let firebaseOk=false;
+
+const cm=()=>new Date().getMonth();
+const pm=()=>{const m=cm();return m===0?11:m-1};
+const curYr=()=>new Date().getFullYear();
+
+// ── FIREBASE INIT ──────────────────────────────────────────────
+function initFirebase(){
+  if(FIREBASE_CONFIG.apiKey===''){
+    document.getElementById('fb-notice').style.display='flex';
+    loadLocalFallbackPlanos();
+    return;
+  }
+  try{
+    const app=initializeApp(FIREBASE_CONFIG);
+    db=getFirestore(app);
+    firebaseOk=true;
+    // Escuta em tempo real
+    unsubFirebase=onSnapshot(collection(db,'planos'),(snap)=>{
+      PL={};
+      snap.forEach(d=>{PL[d.id]=d.data().lista||[]});
+      renderGrid();updSum();
+    });
+  }catch(e){
+    console.warn('Firebase error:',e);
+    document.getElementById('fb-notice').style.display='flex';
+    loadLocalFallbackPlanos();
+  }
+}
+
+function loadLocalFallbackPlanos(){
+  PL=JSON.parse(localStorage.getItem('gg5_pl')||'{}');
+}
+
+async function savePlano(key, lista){
+  if(firebaseOk&&db){
+    await setDoc(doc(db,'planos',key),{lista});
+  } else {
+    PL[key]=lista;
+    localStorage.setItem('gg5_pl',JSON.stringify(PL));
+    renderGrid();updSum();
+  }
+}
+
+async function deletePlano(key, idx){
+  const lista=(PL[key]||[]);
+  lista.splice(idx,1);
+  if(firebaseOk&&db){
+    if(lista.length===0){
+      await deleteDoc(doc(db,'planos',key));
+    } else {
+      await setDoc(doc(db,'planos',key),{lista});
+    }
+  } else {
+    if(lista.length===0) delete PL[key];
+    else PL[key]=lista;
+    localStorage.setItem('gg5_pl',JSON.stringify(PL));
+    renderGrid();updSum();
+  }
+}
+
+async function updateStatus(key, idx, newStatus){
+  const lista=[...(PL[key]||[])];
+  if(lista[idx]) lista[idx].status=newStatus;
+  await savePlano(key, lista);
+}
+
+// ── CHAVE DO PLANO: inclui o mês de criação ──────────────────────
+// key = "indKey__AAAA_MM"  → vinculado ao indicador e ao mês
+function makeIndKey(i){ return `${i.sub}__${i.ind}`.replace(/[^a-zA-Z0-9_]/g,'_'); }
+function makePlKey(i){
+  const n=new Date();
+  return `${makeIndKey(i)}__${n.getFullYear()}_${String(n.getMonth()+1).padStart(2,'0')}`;
+}
+// Retorna todas as chaves de plano de um indicador (qualquer mês)
+function getAllPlanKeys(i){
+  const prefix=makeIndKey(i)+'__';
+  return Object.keys(PL).filter(k=>k.startsWith(prefix));
+}
+// Total de planos de um indicador (todos os meses)
+function countPlans(i){
+  return getAllPlanKeys(i).reduce((a,k)=>a+(PL[k]||[]).length,0);
+}
+
+// ── HELPERS ───────────────────────────────────────────────────
+function pn(s){
+  if(!s||s==='-'||s==='-%'||s==='')return null;
+  const c=s.replace(/R\$\s?/g,'').replace(/%/g,'').replace(/\./g,'').replace(',','.').trim();
+  const n=parseFloat(c);return isNaN(n)?null:n;
+}
+function stCalc(val,meta,ref,name){
+  if(val===null||meta===null)return 'n';
+  const bigger=ref.toLowerCase().includes('maior');
+  const isENPS=(name||'').toLowerCase().includes('enps');
+  if(bigger){
+    if(isENPS){const d=meta-val;if(val>=meta)return 'g';if(d>=30)return 'r';return 'y';}
+    const r=val/meta;if(r>=1)return 'g';if(r>=.85)return 'y';return 'r';
+  } else {
+    const r=val/meta;if(r<=1)return 'g';if(r<=1.15)return 'y';return 'r';
+  }
+}
+const SL={g:'↑ Meta',y:'⚠ Atenção',r:'↓ Crítico',n:'N/D'};
+const SC={g:'sg',y:'sy',r:'sr',n:''};
+const ST_CLS={aguardando:'aguardando',andamento:'andamento',concluido:'concluido',cancelado:'cancelado'};
+
+function totPL(){return Object.values(PL).reduce((a,b)=>a+(Array.isArray(b)?b.length:0),0)}
+
+function parseCSV(t){
+  const lines=t.trim().split('\n');const res=[];
+  for(const l of lines){
+    const row=[];let cur='';let q=false;
+    for(const c of l){if(c==='"'){q=!q}else if(c===','&&!q){row.push(cur.trim());cur=''}else cur+=c;}
+    row.push(cur.trim());res.push(row);
+  }
+  return res;
+}
+function buildInds(raw){
+  const C=cm(),P=pm();
+  return raw
+    .filter(r=>SUB_LIST.includes((r[0]||'').trim().toUpperCase())&&(r[1]||'').trim())
+    .map(r=>{
+      const sub=r[0].trim(),ind=r[1].trim(),ref=r[2]||'',mS=r[3]||'',aS=r[4]||'';
+      const mons=r.slice(5,17).map(v=>(v||'').trim());
+      const mN=pn(mS),cS=mons[C]||'',pS=mons[P]||'';
+      const cN=pn(cS),pN=pn(pS);
+      const status=stCalc(pN,mN,ref,ind);
+      const curSt=stCalc(cN,mN,ref,ind);
+      return{sub,ind,ref,mS,mN,aS,cS,pS,cN,pN,status,curSt,mons};
+    });
+}
+
+// ── FILTROS ───────────────────────────────────────────────────
+// ── INDICADORES CHAVE
+const INDICADORES_CHAVE=['SLA de Contratação','Custo de Contratação','Turnover','Horas de Treinamento','Conformidade de Processos (%)','eNPS','ROI'];
+function isChave(i){ return INDICADORES_CHAVE.some(n=>i.ind.toLowerCase()===n.toLowerCase()); }
+
+function getUniqueSubs(){return[...new Set(INDS.map(i=>i.sub))]}
+
+// Estado: conjunto de indicadores selecionados (por indKey). null/vazio = "Todos"
+let selectedInds=new Set();   // vazio = nenhum filtro (mostra todos)
+let selectedMonths=new Set(); // vazio = usa mês atual (comportamento padrão)
+let graphMode=false;
+let indDropdownOpen=false, monthDropdownOpen=false;
+
+window.toggleSF=function(s){
+  activeSF=(activeSF===s)?null:s;
+  ['g','y','r','p'].forEach(k=>document.getElementById('sc-'+k).classList.toggle('active',activeSF===k));
+  renderGrid();
+}
+
+function applyFilters(){
+  let res=INDS;
+  if(selectedInds.size>0){
+    res=res.filter(i=>selectedInds.has(makeIndKey(i)));
+  }
+  if(activeSF){
+    if(activeSF==='p') res=res.filter(i=>countPlans(i)>0);
+    else res=res.filter(i=>effectiveStatus(i)===activeSF);
+  }
+  return res;
+}
+
+// Calcula o status "efetivo" de um indicador considerando o filtro de mês ativo.
+// Sem filtro de mês: usa i.status (baseado no mês anterior, como já era).
+// Com 1 mês selecionado: status daquele mês específico.
+// Com vários meses selecionados: status baseado na média/acumulado da seleção.
+function effectiveStatus(i){
+  if(selectedMonths.size===0) return i.status;
+  const monthsArr=[...selectedMonths];
+  if(monthsArr.length===1){
+    const v=pn(i.mons[monthsArr[0]]);
+    return stCalc(v,i.mN,i.ref,i.ind);
+  }
+  let sum=0,count=0;
+  monthsArr.forEach(m=>{
+    const v=pn(i.mons[m]);
+    if(v!==null){sum+=v;count++;}
+  });
+  const avg = count>0 ? sum/count : null;
+  return stCalc(avg,i.mN,i.ref,i.ind);
+}
+
+function updSum(){
+  // Considera os indicadores já filtrados por seleção de indicadores,
+  // mas SEM o filtro de status (senão os outros contadores ficariam sempre zerados
+  // quando um filtro de status estiver ativo).
+  const base = selectedInds.size>0
+    ? INDS.filter(i=>selectedInds.has(makeIndKey(i)))
+    : INDS;
+
+  let g=0,y=0,r=0,plans=0;
+  base.forEach(i=>{
+    const st=effectiveStatus(i);
+    if(st==='g')g++;else if(st==='y')y++;else if(st==='r')r++;
+    plans+=countPlans(i);
+  });
+  document.getElementById('cg').textContent=g;
+  document.getElementById('cy').textContent=y;
+  document.getElementById('cr').textContent=r;
+  document.getElementById('cp').textContent=plans;
+}
+
+// ── DROPDOWN HIERÁRQUICO DE INDICADORES ──────────────────────────
+let indGroupExpanded={'__chave':true}; // grupo Indicadores Chave expandido por padrão
+
+function buildIndDropdown(){
+  const subs=getUniqueSubs();
+  const chaveInds=INDS.filter(isChave);
+
+  let html='';
+  html+=`<div class="ind-dd-actions">
+    <button class="ind-dd-btn" onclick="selectAllInds()">Selecionar Tudo</button>
+    <button class="ind-dd-btn" onclick="clearAllInds()">Limpar</button>
+  </div>`;
+
+  // Grupo especial: Indicadores Chave
+  const chaveExpanded=indGroupExpanded['__chave'];
+  html+=`<div class="ind-group">
+    <div class="ind-group-head chave${chaveExpanded?' expanded':''}" onclick="toggleIndGroup('__chave')">
+      <span class="ind-group-chevron">▸</span>
+      <span class="ind-group-label">⭐ Indicadores Chave</span>
+      <span class="ind-group-count">${chaveInds.length}</span>
+      <input type="checkbox" onclick="event.stopPropagation();toggleGroupSelect('__chave',this.checked)" ${chaveInds.every(i=>selectedInds.has(makeIndKey(i)))&&chaveInds.length>0?'checked':''} style="margin-left:6px">
+    </div>
+    <div class="ind-group-items${chaveExpanded?' expanded':''}" id="ind-items-__chave">
+      ${chaveInds.map(i=>{
+        const k=makeIndKey(i);
+        return`<div class="ind-checkbox-row" onclick="event.stopPropagation()">
+          <input type="checkbox" id="indchk-${k}" onclick="event.stopPropagation()" onchange="toggleIndSelect('${k}')" ${selectedInds.has(k)?'checked':''}>
+          <label for="indchk-${k}" onclick="event.stopPropagation()">${i.ind}</label>
+        </div>`;
+      }).join('')}
+    </div>
+  </div>`;
+
+  // Grupos por área
+  for(const sub of subs){
+    const subInds=INDS.filter(i=>i.sub===sub);
+    const gKey='area_'+sub;
+    const expanded=indGroupExpanded[gKey];
+    html+=`<div class="ind-group">
+      <div class="ind-group-head${expanded?' expanded':''}" onclick="toggleIndGroup('${gKey}')">
+        <span class="ind-group-chevron">▸</span>
+        <span class="ind-group-label">${sub}</span>
+        <span class="ind-group-count">${subInds.length}</span>
+        <input type="checkbox" onclick="event.stopPropagation();toggleGroupSelect('${gKey}',this.checked)" ${subInds.every(i=>selectedInds.has(makeIndKey(i)))&&subInds.length>0?'checked':''} style="margin-left:6px">
+      </div>
+      <div class="ind-group-items${expanded?' expanded':''}" id="ind-items-${gKey}">
+        ${subInds.map(i=>{
+          const k=makeIndKey(i);
+          return`<div class="ind-checkbox-row" onclick="event.stopPropagation()">
+            <input type="checkbox" id="indchk-${k}" onclick="event.stopPropagation()" onchange="toggleIndSelect('${k}')" ${selectedInds.has(k)?'checked':''}>
+            <label for="indchk-${k}" onclick="event.stopPropagation()">${i.ind}</label>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }
+
+  document.getElementById('ind-dropdown').innerHTML=html;
+  // store group map for select-all logic
+  window._indGroupMap={'__chave':chaveInds.map(i=>makeIndKey(i))};
+  for(const sub of subs){
+    window._indGroupMap['area_'+sub]=INDS.filter(i=>i.sub===sub).map(i=>makeIndKey(i));
+  }
+}
+
+window.toggleIndDropdown=function(){
+  indDropdownOpen=!indDropdownOpen;
+  document.getElementById('ind-dropdown').classList.toggle('open',indDropdownOpen);
+  document.getElementById('btn-ind-filter').classList.toggle('open',indDropdownOpen);
+  if(indDropdownOpen){
+    monthDropdownOpen=false;
+    document.getElementById('month-dropdown').classList.remove('open');
+    document.getElementById('btn-month-filter').classList.remove('open');
+    buildIndDropdown();
+  }
+};
+
+window.toggleIndGroup=function(gKey){
+  indGroupExpanded[gKey]=!indGroupExpanded[gKey];
+  buildIndDropdown();
+};
+
+window.toggleIndSelect=function(indKey){
+  if(selectedInds.has(indKey)) selectedInds.delete(indKey);
+  else selectedInds.add(indKey);
+  updateIndFilterLabel();
+  buildIndDropdown();
+  renderGrid();
+};
+
+window.toggleGroupSelect=function(gKey,checked){
+  const keys=window._indGroupMap[gKey]||[];
+  keys.forEach(k=>{ if(checked) selectedInds.add(k); else selectedInds.delete(k); });
+  updateIndFilterLabel();
+  buildIndDropdown();
+  renderGrid();
+};
+
+window.selectAllInds=function(){
+  selectedInds=new Set(INDS.map(i=>makeIndKey(i)));
+  updateIndFilterLabel();
+  buildIndDropdown();
+  renderGrid();
+};
+
+window.clearAllInds=function(){
+  selectedInds=new Set();
+  updateIndFilterLabel();
+  buildIndDropdown();
+  renderGrid();
+};
+
+function updateIndFilterLabel(){
+  const el=document.getElementById('ind-filter-label');
+  if(selectedInds.size===0){
+    el.innerHTML='Todos os Indicadores';
+  } else if(selectedInds.size===INDS.length){
+    el.innerHTML='Todos os Indicadores <span class="bif-count">'+selectedInds.size+'</span>';
+  } else {
+    el.innerHTML=selectedInds.size+' Selecionado'+(selectedInds.size>1?'s':'')+' <span class="bif-count">'+selectedInds.size+'</span>';
+  }
+}
+
+// ── DROPDOWN DE MÊS ───────────────────────────────────────────────
+function buildMonthDropdown(){
+  const C=cm();
+  let html='';
+  for(let m=0;m<=C;m++){ // só meses já decorridos no ano
+    const checked=selectedMonths.has(m);
+    html+=`<div class="month-checkbox-row">
+      <input type="checkbox" id="mochk-${m}" onchange="toggleMonthSelect(${m})" ${checked?'checked':''}>
+      <label for="mochk-${m}">${MONTHS[m].substring(0,3)}</label>
+    </div>`;
+  }
+  html+=`<button class="month-dd-clear" onclick="clearMonths()">Limpar Seleção</button>`;
+  document.getElementById('month-dropdown').innerHTML=html;
+}
+
+window.toggleMonthDropdown=function(){
+  monthDropdownOpen=!monthDropdownOpen;
+  document.getElementById('month-dropdown').classList.toggle('open',monthDropdownOpen);
+  document.getElementById('btn-month-filter').classList.toggle('open',monthDropdownOpen);
+  if(monthDropdownOpen){
+    indDropdownOpen=false;
+    document.getElementById('ind-dropdown').classList.remove('open');
+    document.getElementById('btn-ind-filter').classList.remove('open');
+    buildMonthDropdown();
+  }
+};
+
+window.toggleMonthSelect=function(m){
+  if(selectedMonths.has(m)) selectedMonths.delete(m);
+  else selectedMonths.add(m);
+  updateMonthFilterLabel();
+  renderGrid();
+};
+
+window.clearMonths=function(){
+  selectedMonths=new Set();
+  updateMonthFilterLabel();
+  buildMonthDropdown();
+  renderGrid();
+};
+
+function updateMonthFilterLabel(){
+  const el=document.getElementById('month-filter-label');
+  if(selectedMonths.size===0){
+    el.textContent='Mês Atual';
+  } else if(selectedMonths.size===1){
+    const m=[...selectedMonths][0];
+    el.textContent=MONTHS[m].substring(0,3)+' / '+curYr();
+  } else {
+    el.textContent=selectedMonths.size+' Meses Selecionados';
+  }
+}
+
+// Fecha dropdowns ao clicar fora
+document.addEventListener('click',function(e){
+  if(indDropdownOpen && !e.target.closest('.ind-filter-wrap')){
+    indDropdownOpen=false;
+    document.getElementById('ind-dropdown').classList.remove('open');
+    document.getElementById('btn-ind-filter').classList.remove('open');
+  }
+  if(monthDropdownOpen && !e.target.closest('.month-filter-wrap')){
+    monthDropdownOpen=false;
+    document.getElementById('month-dropdown').classList.remove('open');
+    document.getElementById('btn-month-filter').classList.remove('open');
+  }
+});
+
+// ── MODO GRÁFICO ──────────────────────────────────────────────────
+window.toggleGraphMode=function(){
+  graphMode=!graphMode;
+  document.getElementById('btn-graphs').classList.toggle('active',graphMode);
+  renderGrid();
+};
+
+// ── TENDÊNCIA (últimos 3 meses, baseado em dados reais) ───────────
+// Regra: precisa ser consistentemente crescente ou decrescente nos 3 pontos, senão é oscilação
+function calcTrend(i){
+  const C=cm();
+  const m1=C-2, m2=C-1, m3=C; // 3 últimos meses incluindo o atual
+  if(m1<0) return null; // não há histórico suficiente no ano corrente
+  const v1=pn(i.mons[m1]), v2=pn(i.mons[m2]), v3=pn(i.mons[m3]);
+  if(v1===null||v2===null||v3===null) return null;
+
+  const bigger=i.ref.toLowerCase().includes('maior');
+  // "melhorando" depende da direção da meta
+  const seq=[v1,v2,v3];
+  const allIncreasing = seq[1]>seq[0] && seq[2]>seq[1];
+  const allDecreasing = seq[1]<seq[0] && seq[2]<seq[1];
+
+  if(allIncreasing){
+    return bigger ? 'up' : 'down'; // se "maior é melhor", subida = melhora (up=verde); senão piora (down=vermelho)
+  }
+  if(allDecreasing){
+    return bigger ? 'down' : 'up';
+  }
+  // Não monotônico = oscilação (a menos que valores sejam todos iguais = flat)
+  if(v1===v2&&v2===v3) return 'flat';
+  return 'osc';
+}
+
+function renderTrendArrow(i){
+  const trend=calcTrend(i);
+  if(trend===null) return '';
+  const cfg={
+    up:   {cls:'up',   icon:'▲', label:'Melhorando'},
+    down: {cls:'down', icon:'▼', label:'Piorando'},
+    osc:  {cls:'osc',  icon:'↕', label:'Oscilando'},
+    flat: {cls:'flat', icon:'▬', label:'Estável'}
+  }[trend];
+  return `<span class="trend-arrow ${cfg.cls}" title="Tendência (últimos 3 meses): ${cfg.label}">${cfg.icon}</span>`;
+}
+
+
+// ── RENDER ────────────────────────────────────────────────────
+function renderGrid(){
+  const C=cm(),P=pm();
+  const filtered=applyFilters();
+  if(!filtered.length){
+    document.getElementById('dash').innerHTML='<div class="empty-msg">Nenhum indicador para os filtros selecionados.</div>';
+    return;
+  }
+
+  if(graphMode){
+    document.getElementById('dash').innerHTML=filtered.map(i=>renderGraphCard(i)).join('');
+  } else if(selectedMonths.size>0){
+    document.getElementById('dash').innerHTML=filtered.map(i=>renderCardMonthFilter(i)).join('');
+  } else {
+    document.getElementById('dash').innerHTML=filtered.map(i=>renderCard(i,P,C)).join('');
+  }
+  updSum();
+  if(comboSelected.length>=2) renderCombo(); // atualiza combo chart quando filtros mudam
+}
+
+// ── CARD PADRÃO (sem filtro de mês) ───────────────────────────────
+function renderCard(i,P,C){
+  const sc=SC[i.status]||'';
+  const nPl=countPlans(i);
+  const needP=(i.status==='r'||i.status==='y');
+  const yr=curYr();
+  const pL=MONTHS[P].substring(0,3)+' / '+yr;
+  const cL=MONTHS[C].substring(0,3)+' / '+yr;
+  const indKey=makeIndKey(i);
+  const pb=nPl>0?`<span class="pbadge vis" onclick="openMo('${indKey}')">📋 ${nPl}</span>`:'<span class="pbadge"></span>';
+  const trendHtml=renderTrendArrow(i);
+
+  const displayName = i.ind === 'Turnover' ? 'C.P (Coeficiente de Perda)' : i.ind;
+  return`<div class="card ${sc}" id="card-${indKey}">
+  <div class="card-bar"></div>
+  <div class="ch">
+    <div class="ch-l"><div class="tag">${i.sub}</div><div class="cname">${displayName}</div></div>
+    <div class="ch-r"><div class="ch-r-statusline">${trendHtml}<div class="badge">${SL[i.status]}</div></div>${pb}</div>
+  </div>
+  <div class="rows">
+    <div class="row meta"><div class="row-left"><div class="rl">Meta</div></div><div class="rv">${i.mS||'—'}</div></div>
+    <div class="row acum"><div class="row-left"><div class="rl">Acumulado ${yr}</div><div class="rs">Ano corrente</div></div><div class="rv">${i.aS||'—'}</div></div>
+    <div class="row prev"><div class="row-left"><div class="rl">${pL}</div><div class="rs">Mês anterior · base do status</div></div><div class="rv">${i.pS||'—'}</div></div>
+    <div class="row cur ${SC[i.curSt]||sc}"><div class="row-left"><div class="rl">${cL}</div><div class="rs">Mês atual</div></div><div class="rv">${i.cS||'—'}</div></div>
+  </div>
+  ${needP?renderPS(i,P):''}
+  <div class="cf"><button class="btn-ap" onclick="openMo('${indKey}')">⊞ Aprofundar</button></div>
+</div>`;
+}
+
+// ── CARD COM FILTRO DE MÊS (1 ou múltiplos meses selecionados) ───
+function renderCardMonthFilter(i){
+  const indKey=makeIndKey(i);
+  const yr=curYr();
+  const monthsArr=[...selectedMonths].sort((a,b)=>a-b);
+  const nPl=countPlans(i);
+  const pb=nPl>0?`<span class="pbadge vis" onclick="openMo('${indKey}')">📋 ${nPl}</span>`:'<span class="pbadge"></span>';
+  const displayName = i.ind === 'Turnover' ? 'C.P (Coeficiente de Perda)' : i.ind;
+  const trendHtml=renderTrendArrow(i);
+
+  if(monthsArr.length===1){
+    // ── 1 mês: mesmo modelo de card, mas troca prev/cur pelo mês selecionado
+    const m=monthsArr[0];
+    const valStr=i.mons[m]||'';
+    const valNum=pn(valStr);
+    const st=stCalc(valNum,i.mN,i.ref,i.ind);
+    const sc=SC[st]||'';
+    const mLbl=MONTHS[m].substring(0,3)+' / '+yr;
+    const needP=(st==='r'||st==='y');
+
+    return`<div class="card ${sc}" id="card-${indKey}">
+    <div class="card-bar"></div>
+    <div class="ch">
+      <div class="ch-l"><div class="tag">${i.sub}</div><div class="cname">${displayName}</div></div>
+      <div class="ch-r"><div class="ch-r-statusline">${trendHtml}<div class="badge">${SL[st]}</div></div>${pb}</div>
+    </div>
+    <div class="rows">
+      <div class="row meta"><div class="row-left"><div class="rl">Meta</div></div><div class="rv">${i.mS||'—'}</div></div>
+      <div class="row acum"><div class="row-left"><div class="rl">Acumulado ${yr}</div><div class="rs">Ano corrente</div></div><div class="rv">${i.aS||'—'}</div></div>
+      <div class="row cur ${sc}"><div class="row-left"><div class="rl">${mLbl}</div><div class="rs">Mês selecionado</div></div><div class="rv">${valStr||'—'}</div></div>
+    </div>
+    ${needP?renderPS({...i,status:st},m):''}
+    <div class="cf"><button class="btn-ap" onclick="openMo('${indKey}')">⊞ Aprofundar</button></div>
+  </div>`;
+  }
+
+  // ── múltiplos meses: mostra cada mês selecionado + acumulado dos meses ──
+  let sum=0,count=0;
+  const rows=monthsArr.map(m=>{
+    const v=i.mons[m]||'';
+    const n=pn(v);
+    if(n!==null){sum+=n;count++;}
+    return`<div class="row"><div class="row-left"><div class="rl">${MONTHS[m].substring(0,3)} / ${yr}</div></div><div class="rv">${v||'—'}</div></div>`;
+  }).join('');
+
+  const avg = count>0 ? (sum/count) : null;
+  const avgStatus = stCalc(avg,i.mN,i.ref,i.ind);
+  const sc=SC[avgStatus]||'';
+  const avgDisplay = avg!==null ? avg.toLocaleString('pt-BR',{maximumFractionDigits:2}) : '—';
+  const needP=(avgStatus==='r'||avgStatus==='y');
+
+  return`<div class="card ${sc}" id="card-${indKey}">
+  <div class="card-bar"></div>
+  <div class="ch">
+    <div class="ch-l"><div class="tag">${i.sub}</div><div class="cname">${displayName}</div></div>
+    <div class="ch-r"><div class="ch-r-statusline">${trendHtml}<div class="badge">${SL[avgStatus]}</div></div>${pb}</div>
+  </div>
+  <div class="rows">
+    <div class="row meta"><div class="row-left"><div class="rl">Meta</div></div><div class="rv">${i.mS||'—'}</div></div>
+    ${rows}
+    <div class="row cur ${sc}"><div class="row-left"><div class="rl">Acumulado (seleção)</div><div class="rs">Média dos ${monthsArr.length} meses</div></div><div class="rv">${avgDisplay}</div></div>
+  </div>
+  ${needP?renderPS({...i,status:avgStatus},monthsArr[monthsArr.length-1]):''}
+  <div class="cf"><button class="btn-ap" onclick="openMo('${indKey}')">⊞ Aprofundar</button></div>
+</div>`;
+}
+
+// ── GRAPH CARD (modo gráfico) ─────────────────────────────────────
+function renderGraphCard(i){
+  const indKey=makeIndKey(i);
+  const yr=curYr();
+  const C=cm();
+  // Define quais meses mostrar no gráfico: selecionados, ou todos os decorridos do ano
+  const monthsToShow = selectedMonths.size>0 ? [...selectedMonths].sort((a,b)=>a-b) : Array.from({length:C+1},(_,k)=>k);
+
+  const points=monthsToShow.map(m=>({m,v:pn(i.mons[m])})).filter(p=>p.v!==null);
+  const metaVal=i.mN;
+
+  // status do card = baseado no último ponto disponível
+  const lastVal = points.length ? points[points.length-1].v : null;
+  const st=stCalc(lastVal,metaVal,i.ref,i.ind);
+  const sc=SC[st]||'';
+  const displayName = i.ind === 'Turnover' ? 'C.P (Coeficiente de Perda)' : i.ind;
+  const trendHtml=renderTrendArrow(i);
+
+  // ── Construir SVG do gráfico de linha ──
+  const W=560,H=160,padL=40,padR=20,padT=16,padB=28;
+  const plotW=W-padL-padR, plotH=H-padT-padB;
+
+  let svgInner='';
+  if(points.length>=1){
+    const allVals=points.map(p=>p.v).concat(metaVal!==null?[metaVal]:[]);
+    const vMin=Math.min(...allVals), vMax=Math.max(...allVals);
+    const range=(vMax-vMin)||1;
+    const yScale=v=>padT+plotH-((v-vMin)/range)*plotH;
+    const xStep = points.length>1 ? plotW/(points.length-1) : 0;
+    const xScale=idx=> points.length>1 ? padL+idx*xStep : padL+plotW/2;
+
+    // linha de meta (corte de fundo)
+    if(metaVal!==null){
+      const yMeta=yScale(metaVal);
+      svgInner+=`<line x1="${padL}" y1="${yMeta}" x2="${W-padR}" y2="${yMeta}" stroke="var(--tx3)" stroke-width="1.5" stroke-dasharray="4,4" opacity="0.6"/>`;
+      svgInner+=`<text x="${W-padR}" y="${yMeta-4}" text-anchor="end" font-size="8" fill="var(--tx3)" font-weight="700">META ${i.mS}</text>`;
+    }
+
+    // linha de dados — usa cor neutra/azul para a linha (conexão), pontos têm cor individual
+    const pathD=points.map((p,idx)=>`${idx===0?'M':'L'} ${xScale(idx)} ${yScale(p.v)}`).join(' ');
+    svgInner+=`<path d="${pathD}" fill="none" stroke="var(--ac)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.5"/>`;
+
+    // pontos + labels — cor de cada bolinha reflete o status DAQUELE mês específico
+    points.forEach((p,idx)=>{
+      const x=xScale(idx),y=yScale(p.v);
+      const pSt=stCalc(p.v,metaVal,i.ref,i.ind);
+      const pColor = pSt==='g'?'var(--g)':pSt==='y'?'var(--y)':pSt==='r'?'var(--r)':'var(--ac)';
+      svgInner+=`<circle cx="${x}" cy="${y}" r="5" fill="${pColor}" stroke="var(--sur)" stroke-width="2"/>`;
+      svgInner+=`<text x="${x}" y="${H-8}" text-anchor="middle" font-size="8" fill="var(--tx3)" font-weight="600">${MONTHS[p.m].substring(0,3)}</text>`;
+      svgInner+=`<text x="${x}" y="${y-10}" text-anchor="middle" font-size="9" fill="${pColor}" font-weight="700">${i.mons[p.m]}</text>`;
+    });
+  } else {
+    svgInner=`<text x="${W/2}" y="${H/2}" text-anchor="middle" font-size="11" fill="var(--tx3)" font-weight="600">Sem dados suficientes</text>`;
+  }
+
+  const svg=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block">${svgInner}</svg>`;
+
+  return`<div class="graph-card ${sc}" id="card-${indKey}" style="grid-column:span 2">
+    <div class="card-bar"></div>
+    <div class="graph-card-head">
+      <div class="ch" style="padding:0">
+        <div class="ch-l"><div class="tag">${i.sub}</div><div class="cname">${displayName}</div></div>
+        <div class="ch-r"><div class="ch-r-statusline">${trendHtml}<div class="badge">${SL[st]}</div></div></div>
+      </div>
+    </div>
+    <div class="graph-svg-wrap">${svg}</div>
+    <div class="graph-legend">
+      <div class="graph-legend-item"><span class="graph-legend-dot" style="background:var(--g)"></span>Na meta</div>
+      <div class="graph-legend-item"><span class="graph-legend-dot" style="background:var(--y)"></span>Atenção</div>
+      <div class="graph-legend-item"><span class="graph-legend-dot" style="background:var(--r)"></span>Crítico</div>
+      <div class="graph-legend-item"><span class="graph-legend-dot" style="background:var(--tx3)"></span>Meta (linha de corte)</div>
+    </div>
+  </div>`;
+}
+
+// ── CHAT PANEL (protótipo visual — sem backend conectado ainda) ──
+window.toggleChatPlaceholder=function(){
+  document.getElementById('chat-overlay').classList.add('open');
+  document.getElementById('chat-panel').classList.add('open');
+};
+window.closeChatPanel=function(){
+  document.getElementById('chat-overlay').classList.remove('open');
+  document.getElementById('chat-panel').classList.remove('open');
+};
+
+function addChatMsg(text,who){
+  const body=document.getElementById('chat-body');
+  const div=document.createElement('div');
+  div.className='chat-msg '+who;
+  div.innerHTML=`<div class="chat-msg-avatar">${who==='ai'?'✦':'👤'}</div><div class="chat-msg-bubble">${text}</div>`;
+  body.appendChild(div);
+  body.scrollTop=body.scrollHeight;
+}
+
+const CHAT_SIMULATED_REPLIES=[
+  "Esta é uma resposta simulada — neste protótipo o chat ainda não está conectado à API. Quando integrado, eu vou analisar os dados reais do dashboard (incluindo histórico mensal e planos de ação) para responder perguntas como essa.",
+  "Boa pergunta! Na versão conectada, eu cruzaria os valores mensais desse indicador com os demais para identificar correlações e tendências reais — por ora estou apenas simulando o layout da conversa.",
+  "Ainda sem conexão com a IA nesta etapa. Quando ativarmos a API, esse espaço vai trazer análises geradas a partir dos números que estão sendo exibidos no dashboard agora."
+];
+
+window.sendChatSuggestion=function(btn){
+  const text=btn.textContent;
+  addChatMsg(text,'user');
+  setTimeout(()=>{
+    const reply=CHAT_SIMULATED_REPLIES[Math.floor(Math.random()*CHAT_SIMULATED_REPLIES.length)];
+    addChatMsg(reply,'ai');
+  },500);
+};
+
+window.sendChatMessage=function(){
+  const input=document.getElementById('chat-input');
+  const text=input.value.trim();
+  if(!text)return;
+  addChatMsg(text,'user');
+  input.value='';
+  setTimeout(()=>{
+    const reply=CHAT_SIMULATED_REPLIES[Math.floor(Math.random()*CHAT_SIMULATED_REPLIES.length)];
+    addChatMsg(reply,'ai');
+  },500);
+};
+
+
+function renderPS(i,P){
+  const sc=SC[i.status];
+  const plKey=makePlKey(i);
+  const allKeys=getAllPlanKeys(i);
+  const allPls=allKeys.flatMap(k=>(PL[k]||[]).map(p=>({...p,_key:k})));
+  const aOpts=PLAN_AREAS.map(a=>`<option value="${a}">${a}</option>`).join('');
+  const stOpts=Object.entries(ST_STATUS).map(([v,l])=>`<option value="${v}">${l}</option>`).join('');
+  const indKey=makeIndKey(i);
+  const carId=`car-${indKey}`;
+
+  // CAROUSEL — mostra 1 plano por vez
+  let carH='';
+  if(allPls.length){
+    const items=allPls.map((p,pi)=>{
+      const stCls=ST_CLS[p.status||'aguardando']||'aguardando';
+      const stLbl=ST_STATUS[p.status||'aguardando']||'Aguardando Início';
+      const origList=PL[p._key]||[];
+      const origIdx=origList.findIndex(x=>x.acao===p.acao&&x.resp===p.resp&&x.ini===p.ini);
+      return`<div class="pcar-item${pi===0?' active':''}" data-idx="${pi}">
+        <div class="pi">
+          <div class="pi-h">
+            <span class="pi-n">Plano #${pi+1}</span>
+            <span class="pi-ar">${p.area||'—'}</span>
+            <span class="pi-st ${stCls}">${stLbl}</span>
+            <button class="pi-edit-btn" onclick="openEditPlan('${p._key}',${origIdx})" title="Editar plano">✏</button>
+            <button class="pi-del" onclick="delPl('${p._key}',${origIdx})">×</button>
+          </div>
+          <div class="pi-ac">${p.acao||'—'}</div>
+          <div class="pi-m">
+            <div class="pi-mi">👤 <b>${p.resp||'—'}</b></div>
+            <div class="pi-mi">📅 <b>${p.ini||'—'}</b>→<b>${p.fim||'—'}</b></div>
+            <div class="pi-mi">🎯 <b>${p.met||'—'}</b></div>
+            <div class="pi-mi" style="margin-left:auto">
+              <select class="pi-st-sel" onchange="updSt('${p._key}',${origIdx},this.value)">
+                ${Object.entries(ST_STATUS).map(([v,l])=>`<option value="${v}"${p.status===v?' selected':''}>${l}</option>`).join('')}
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+    carH=`<div class="pcarousel" id="${carId}">
+      <div class="pcar-track">${items}</div>
+      ${allPls.length>1?`<div class="pcar-nav">
+        <button class="pcar-btn" onclick="carNav('${carId}',-1)" id="${carId}-prev" disabled>‹ Anterior</button>
+        <span class="pcar-counter" id="${carId}-ctr">1 / ${allPls.length}</span>
+        <button class="pcar-btn" onclick="carNav('${carId}',1)" id="${carId}-next">Próximo ›</button>
+      </div>`:''}
+    </div>`;
+  }
+
+  return`<div class="ps ${sc}" id="ps-${indKey}">
+  <div class="ps-title">⚡ Planos de Ação${allPls.length?' ('+allPls.length+')':''}</div>
+  ${carH}
+  <button class="pft" onclick="togPF('${indKey}')">+ Adicionar novo plano</button>
+  <div class="pf" id="pf-${indKey}">
+    <div class="fr full"><div class="fl"><label>Ação Proposta</label><textarea id="fa-${indKey}" placeholder="Descreva a ação corretiva..."></textarea></div></div>
+    <div class="fr">
+      <div class="fl"><label>Responsável</label><input id="fr-${indKey}" type="text" placeholder="Nome..."></div>
+      <div class="fl"><label>Área Responsável</label><select id="farea-${indKey}">${aOpts}</select></div>
+    </div>
+    <div class="fr">
+      <div class="fl"><label>Início</label><input id="fi-${indKey}" type="date"></div>
+      <div class="fl"><label>Término</label><input id="ff-${indKey}" type="date"></div>
+    </div>
+    <div class="fr">
+      <div class="fl"><label>Métrica de Sucesso</label><input id="fm-${indKey}" type="text" placeholder="Como medir?"></div>
+      <div class="fl"><label>Status Inicial</label><select id="fst-${indKey}">${stOpts}</select></div>
+    </div>
+    <button class="btn-save" onclick="addPl('${indKey}','${plKey}')">✓ Salvar Plano</button>
+  </div>
+</div>`;
+}
+
+// ── PLANO CRUD ────────────────────────────────────────────────
+window.togPF=function(indKey){const f=document.getElementById(`pf-${indKey}`);if(f)f.classList.toggle('open');}
+
+// ── PLAN EDIT MODAL ───────────────────────────────────────────
+window.openEditPlan=function(key,idx){
+  const plan=(PL[key]||[])[idx];
+  if(!plan)return;
+  const aOpts=PLAN_AREAS.map(a=>`<option value="${a}"${plan.area===a?' selected':''}>${a}</option>`).join('');
+  const stOpts=Object.entries(ST_STATUS).map(([v,l])=>`<option value="${v}"${plan.status===v?' selected':''}>${l}</option>`).join('');
+  // Histórico de edições do plano
+  const editHist=(plan.editHist||[]);
+  const histH=editHist.length
+    ?'<div class="medit-list">'+editHist.map(e=>{
+        const dt=new Date(e.quando).toLocaleString('pt-BR');
+        return`<div class="medit-item">
+          <span class="medit-field">${e.campo}</span>
+          <span class="medit-old">${e.de}</span>
+          <span class="medit-arrow">→</span>
+          <span class="medit-new">${e.para}</span>
+          <span class="medit-who">✏ ${e.quem} · ${dt}</span>
+        </div>`;
+      }).join('')+'</div>'
+    :'<div style="color:var(--tx3);font-size:10px;font-weight:500;padding:6px 0">Nenhuma edição registrada ainda.</div>';
+
+  document.getElementById('mi').innerHTML=`
+    <div style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:var(--ac);margin-bottom:12px">✏ Editar Plano de Ação</div>
+    <div style="display:flex;flex-direction:column;gap:8px" id="edit-plan-form">
+      <div class="fl"><label>Ação Proposta</label><textarea id="ep-acao" style="background:var(--sur3);border:1px solid var(--bd2);border-radius:7px;padding:8px 10px;color:var(--tx);font-family:Montserrat,sans-serif;font-size:11px;font-weight:500;outline:none;width:100%;min-height:70px;resize:none">${plan.acao||''}</textarea></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div class="fl"><label>Responsável</label><input id="ep-resp" type="text" value="${plan.resp||''}" style="background:var(--sur3);border:1px solid var(--bd2);border-radius:7px;padding:8px 10px;color:var(--tx);font-family:Montserrat,sans-serif;font-size:11px;font-weight:500;outline:none;width:100%"></div>
+        <div class="fl"><label>Área</label><select id="ep-area" style="background:var(--sur3);border:1px solid var(--bd2);border-radius:7px;padding:8px 10px;color:var(--tx);font-family:Montserrat,sans-serif;font-size:11px;font-weight:500;outline:none;width:100%">${aOpts}</select></div>
+        <div class="fl"><label>Início</label><input id="ep-ini" type="date" value="${plan.ini||''}" style="background:var(--sur3);border:1px solid var(--bd2);border-radius:7px;padding:8px 10px;color:var(--tx);font-family:Montserrat,sans-serif;font-size:11px;outline:none;width:100%"></div>
+        <div class="fl"><label>Término</label><input id="ep-fim" type="date" value="${plan.fim||''}" style="background:var(--sur3);border:1px solid var(--bd2);border-radius:7px;padding:8px 10px;color:var(--tx);font-family:Montserrat,sans-serif;font-size:11px;outline:none;width:100%"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div class="fl"><label>Métrica de Sucesso</label><input id="ep-met" type="text" value="${plan.met||''}" style="background:var(--sur3);border:1px solid var(--bd2);border-radius:7px;padding:8px 10px;color:var(--tx);font-family:Montserrat,sans-serif;font-size:11px;font-weight:500;outline:none;width:100%"></div>
+        <div class="fl"><label>Status</label><select id="ep-st" style="background:var(--sur3);border:1px solid var(--bd2);border-radius:7px;padding:8px 10px;color:var(--tx);font-family:Montserrat,sans-serif;font-size:11px;font-weight:500;outline:none;width:100%">${stOpts}</select></div>
+      </div>
+      <button onclick="saveEditPlan('${key}',${idx})" style="background:var(--ac2);border:1px solid var(--acbd);border-radius:8px;padding:10px;color:var(--ac);font-family:Montserrat,sans-serif;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.11em;cursor:pointer;margin-top:4px;transition:all .2s" onmouseover="this.style.background='var(--ac)';this.style.color='#fff'" onmouseout="this.style.background='var(--ac2)';this.style.color='var(--ac)'">✓ Salvar Alterações</button>
+    </div>
+    <div style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.14em;color:var(--tx3);margin:18px 0 10px;display:flex;align-items:center;gap:8px">Histórico de Edições <span style="flex:1;height:1px;background:var(--bd);display:block"></span></div>
+    ${histH}`;
+  document.getElementById('mo').classList.add('open');
+  document.body.style.overflow='hidden';
+};
+
+window.saveEditPlan=async function(key,idx){
+  const lista=[...(PL[key]||[])];
+  const plan=lista[idx];if(!plan)return;
+  const quem=prompt('Seu nome (para o histórico de edições):','')||'Anônimo';
+  // Detect changes and record history
+  const fields={
+    'Ação':['acao',document.getElementById('ep-acao')?.value.trim()||''],
+    'Responsável':['resp',document.getElementById('ep-resp')?.value.trim()||''],
+    'Área':['area',document.getElementById('ep-area')?.value||''],
+    'Início':['ini',document.getElementById('ep-ini')?.value||''],
+    'Término':['fim',document.getElementById('ep-fim')?.value||''],
+    'Métrica':['met',document.getElementById('ep-met')?.value.trim()||''],
+    'Status':['status',document.getElementById('ep-st')?.value||'aguardando'],
+  };
+  const editHist=[...(plan.editHist||[])];
+  for(const[label,[field,newVal]]of Object.entries(fields)){
+    if(plan[field]!==newVal){
+      editHist.push({campo:label,de:plan[field]||'—',para:newVal,quem,quando:new Date().toISOString()});
+      lista[idx][field]=newVal;
+    }
+  }
+  lista[idx].editHist=editHist;
+  await savePlano(key,lista);
+  closeMo();
+};
+
+window.carNav=function(carId,dir){
+  const car=document.getElementById(carId);if(!car)return;
+  const items=car.querySelectorAll('.pcar-item');
+  let cur=0;items.forEach((el,i)=>{if(el.classList.contains('active'))cur=i;});
+  const next=cur+dir;
+  if(next<0||next>=items.length)return;
+  items[cur].classList.remove('active');
+  items[next].classList.add('active');
+  const ctr=document.getElementById(carId+'-ctr');
+  const prev=document.getElementById(carId+'-prev');
+  const nxt=document.getElementById(carId+'-next');
+  if(ctr)ctr.textContent=(next+1)+' / '+items.length;
+  if(prev)prev.disabled=(next===0);
+  if(nxt)nxt.disabled=(next===items.length-1);
+};
+
+window.addPl=async function(indKey,plKey){
+  const acao=document.getElementById(`fa-${indKey}`)?.value.trim()||'';
+  if(!acao){const el=document.getElementById(`fa-${indKey}`);if(el){el.style.borderColor='var(--r)';setTimeout(()=>el.style.borderColor='',1500);}return;}
+  const lista=[...(PL[plKey]||[])];
+  lista.push({
+    acao,
+    resp:document.getElementById(`fr-${indKey}`)?.value.trim()||'',
+    area:document.getElementById(`farea-${indKey}`)?.value||'',
+    ini:document.getElementById(`fi-${indKey}`)?.value||'',
+    fim:document.getElementById(`ff-${indKey}`)?.value||'',
+    met:document.getElementById(`fm-${indKey}`)?.value.trim()||'',
+    status:document.getElementById(`fst-${indKey}`)?.value||'aguardando',
+    criadoEm: new Date().toISOString()
+  });
+  await savePlano(plKey,lista);
+};
+
+window.delPl=async function(key,idx){await deletePlano(key,idx);};
+window.updSt=async function(key,idx,newSt){await updateStatus(key,idx,newSt);};
+
+// ── MODAL ─────────────────────────────────────────────────────
+window.openMo=function(indKey){
+  const i=INDS.find(x=>makeIndKey(x)===indKey);if(!i)return;
+  const C=cm();
+
+  // Histórico mensal
+  let hR='';
+  for(let m=0;m<12;m++){
+    const v=i.mons[m];if(!v)continue;
+    const s2=stCalc(pn(v),i.mN,i.ref,i.ind);
+    const cls=s2==='g'?'vg':s2==='y'?'vy':s2==='r'?'vr':'';
+    const hl=m===C?` style="background:var(--sur2)"`:'';
+    // planos desse mês
+    const mKey=`${indKey}__${curYr()}_${String(m+1).padStart(2,'0')}`;
+    const mPls=PL[mKey]||[];
+    const plChip=mPls.length
+      ?`<span class="plan-chip" onclick="toggleHtDetail('htd-${m}')">${mPls.length} plano${mPls.length>1?'s':''}</span>`
+      :'';
+    hR+=`<tr${hl}><td style="color:var(--tx2);font-weight:600">${MONTHS[m]}</td><td class="${cls}">${v}</td><td style="color:var(--tx3)">${i.mS}</td><td>${plChip}</td></tr>`;
+    // detalhe dos planos inline
+    if(mPls.length){
+      const detHtml=mPls.map((p,pi)=>{
+        const stCls=ST_CLS[p.status||'aguardando'];
+        const stLbl=ST_STATUS[p.status||'aguardando'];
+        return`<div style="background:var(--sur3);border-radius:7px;padding:8px 10px;margin-bottom:5px">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;flex-wrap:wrap">
+            <span style="font-size:8px;font-weight:800;color:var(--tx3);text-transform:uppercase">Plano #${pi+1}</span>
+            <span class="mpa">${p.area||'—'}</span>
+            <span class="mps ${stCls}">${stLbl}</span>
+          </div>
+          <div style="font-size:12px;font-weight:700;color:var(--tx);margin-bottom:4px">${p.acao}</div>
+          <div style="font-size:9px;color:var(--tx3)">
+            👤 <b style="color:var(--tx2)">${p.resp||'—'}</b> &nbsp;
+            📅 <b style="color:var(--tx2)">${p.ini||'—'}</b>→<b style="color:var(--tx2)">${p.fim||'—'}</b> &nbsp;
+            🎯 <b style="color:var(--tx2)">${p.met||'—'}</b>
+          </div>
+        </div>`;
+      }).join('');
+      hR+=`<tr class="ht-plan-row"><td colspan="4"><div class="ht-plan-detail" id="htd-${m}">${detHtml}</div></td></tr>`;
+    }
+  }
+  if(!hR)hR=`<tr><td colspan="4" style="text-align:center;color:var(--tx3);padding:16px;font-weight:500">Sem dados históricos</td></tr>`;
+
+  // Todos os planos do indicador (visão consolidada)
+  const allKeys=getAllPlanKeys(i);
+  const allPls=allKeys.flatMap(k=>(PL[k]||[]).map(p=>({...p,_key:k})));
+  let pH=allPls.length
+    ?('<div class="mpl">'+allPls.map((p,pi)=>{
+        const stCls=ST_CLS[p.status||'aguardando'];
+        const stLbl=ST_STATUS[p.status||'aguardando'];
+        const mesRef=p._key.split('__').pop().replace('_','/');
+        const pEditHist=(p.editHist||[]);
+        const pHistH=pEditHist.length
+          ?'<div style="margin-top:8px;border-top:1px solid var(--bd);padding-top:8px"><div style="font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--tx3);margin-bottom:5px">Histórico de Edições</div><div class="medit-list">'+
+            pEditHist.map(e=>{
+              const dt=new Date(e.quando).toLocaleString('pt-BR');
+              return`<div class="medit-item"><span class="medit-field">${e.campo}</span><span class="medit-old">${e.de}</span><span class="medit-arrow">→</span><span class="medit-new">${e.para}</span><span class="medit-who">✏ ${e.quem} · ${dt}</span></div>`;
+            }).join('')+'</div></div>'
+          :'';
+        return`<div class="mpc">
+          <div class="mph">
+            <span class="mpn">Plano #${pi+1}</span>
+            <span class="mpa">${p.area||'—'}</span>
+            <span class="mps ${stCls}">${stLbl}</span>
+            <span style="font-size:8px;font-weight:600;color:var(--tx3);margin-left:auto">Criado em: ${mesRef}</span>
+          </div>
+          <div class="mpac">${p.acao||'—'}</div>
+          <div class="mpg">
+            <div class="mpf"><div class="mpfl">Responsável</div><div class="mpfv">${p.resp||'—'}</div></div>
+            <div class="mpf"><div class="mpfl">Início</div><div class="mpfv">${p.ini||'—'}</div></div>
+            <div class="mpf"><div class="mpfl">Término</div><div class="mpfv">${p.fim||'—'}</div></div>
+            <div class="mpf mpfull"><div class="mpfl">Métrica de Sucesso</div><div class="mpfv">${p.met||'—'}</div></div>
+          </div>
+          ${pHistH}
+        </div>`;
+      }).join('')+'</div>')
+    :`<div style="color:var(--tx3);font-size:11px;font-weight:500;padding:8px 0">Nenhum plano registrado.</div>`;
+
+
+    document.getElementById('mi').innerHTML=`
+    <div class="mt">${i.sub}</div><div class="mtt">${i.ind}</div>
+    <div class="mrf">${i.ref} · Meta: ${i.mS}</div>
+    <div class="msec">Histórico de Resultados</div>
+    <table class="ht">
+      <thead><tr><th>Mês</th><th>Realizado</th><th>Meta</th><th>Planos de Ação</th></tr></thead>
+      <tbody>${hR}</tbody>
+    </table>
+    <div class="msec">Todos os Planos de Ação (${allPls.length})</div>${pH}`;
+  document.getElementById('mo').classList.add('open');
+  document.body.style.overflow='hidden';
+};
+
+window.toggleHtDetail=function(id){
+  const el=document.getElementById(id);
+  if(el) el.classList.toggle('open');
+};
+
+window.closeMo=function(){document.getElementById('mo').classList.remove('open');document.body.style.overflow='';};
+window.moClick=function(e){if(e.target===document.getElementById('mo'))closeMo();};
+
+// ══════════════════════════════════════════════════════════════
+// COMBO CHART — Gráfico de Eixo Duplo (Dual Y-Axis)
+// ══════════════════════════════════════════════════════════════
+const COMBO_COLORS=[
+  {c:'#4f8cff'},  // azul
+  {c:'#a78bfa'},  // roxo
+  {c:'#1ed97a'},  // verde
+  {c:'#f5c840'},  // amarelo
+];
+// comboSelected: array de {key: indKey, axis: 'bar'|'line'}, max 4
+let comboSelected=[];
+
+// Sugere tipo padrão com base na natureza do indicador
+function defaultAxisType(i){
+  const s=(i.mS||'').toLowerCase();
+  const n=(i.ind||'').toLowerCase();
+  if(s.includes('%')||n.includes('%')) return 'line';
+  if(n.includes('taxa')||n.includes('turnover')||n.includes('absenteísmo')||n.includes('favorabilidade')||n.includes('conformidade')||n.includes('custo de contratação')) return 'line';
+  return 'bar';
+}
+
+function buildComboDropdown(){
+  const sel=document.getElementById('combo-metric-select');
+  if(!sel) return;
+  let html='<option value="">+ Adicionar métrica...</option>';
+  INDS.forEach(i=>{
+    const k=makeIndKey(i);
+    const already=comboSelected.some(s=>s.key===k);
+    const displayName = i.ind==='Turnover'?'C.P (Coeficiente de Perda)':i.ind;
+    const defType=defaultAxisType(i);
+    const tag=defType==='line'?'[sugestão: Linha]':'[sugestão: Barra]';
+    html+=`<option value="${k}" ${already?'disabled':''}>${i.sub} · ${displayName} ${tag}</option>`;
+  });
+  sel.innerHTML=html;
+  sel.onchange=function(){
+    const v=this.value;
+    if(!v) return;
+    if(comboSelected.length>=4){this.value='';return;}
+    if(!comboSelected.some(s=>s.key===v)){
+      const i=INDS.find(x=>makeIndKey(x)===v);
+      comboSelected.push({key:v, axis: i?defaultAxisType(i):'bar'});
+      renderCombo();
+    }
+    this.value='';
+  };
+}
+
+function renderComboChips(){
+  const cont=document.getElementById('combo-chips');
+  if(!cont) return;
+  cont.innerHTML=comboSelected.map((sel,ci)=>{
+    const i=INDS.find(x=>makeIndKey(x)===sel.key);
+    if(!i) return '';
+    const cls=sel.axis==='line'?'combo-chip-line':'combo-chip-bar';
+    const displayName = i.ind==='Turnover'?'C.P':i.ind;
+    const shortName=displayName.length>20?displayName.substring(0,18)+'…':displayName;
+    const icon=sel.axis==='bar'?'▥':'⌇';
+    const toggleLabel=sel.axis==='bar'?'Barra':'Linha';
+    return`<span class="combo-chip ${cls}">
+      <span style="width:8px;height:8px;border-radius:2px;background:${COMBO_COLORS[ci].c};display:inline-block;margin-right:2px"></span>
+      ${shortName}
+      <button class="combo-chip-toggle" onclick="event.stopPropagation();toggleComboAxis(${ci})" title="Alternar entre Barra e Linha">${icon} ${toggleLabel}</button>
+      <button class="combo-chip-x" onclick="removeComboMetric(${ci})">×</button>
+    </span>`;
+  }).join('');
+}
+
+window.toggleComboAxis=function(ci){
+  if(!comboSelected[ci]) return;
+  comboSelected[ci].axis = comboSelected[ci].axis==='bar'?'line':'bar';
+  renderCombo();
+};
+
+window.removeComboMetric=function(ci){
+  comboSelected.splice(ci,1);
+  renderCombo();
+};
+
+function renderCombo(){
+  buildComboDropdown();
+  renderComboChips();
+  const svgArea=document.getElementById('combo-svg-area');
+  const emptyEl=document.getElementById('combo-empty');
+  const legendEl=document.getElementById('combo-legend');
+  if(!svgArea||!emptyEl||!legendEl) return;
+
+  if(comboSelected.length<2){
+    emptyEl.style.display='block';
+    svgArea.innerHTML='';
+    legendEl.innerHTML='';
+    return;
+  }
+  emptyEl.style.display='none';
+
+  // Agrupa métricas por eixo ESCOLHIDO PELO USUÁRIO
+  const metrics=comboSelected.map((sel,ci)=>{
+    const i=INDS.find(x=>makeIndKey(x)===sel.key);
+    return i?{...i,_ci:ci,_axis:sel.axis}:null;
+  }).filter(Boolean);
+
+  const barMetrics=metrics.filter(m=>m._axis==='bar');
+  const lineMetrics=metrics.filter(m=>m._axis==='line');
+
+  // Meses a mostrar
+  const C=cm();
+  const monthsToShow = selectedMonths.size>0 ? [...selectedMonths].sort((a,b)=>a-b) : Array.from({length:C+1},(_,k)=>k);
+
+  // Coletar valores para escalar os eixos
+  let barVals=[],lineVals=[];
+  metrics.forEach(m=>{
+    monthsToShow.forEach(mo=>{
+      const v=pn(m.mons[mo]);
+      if(v!==null){
+        if(m._axis==='bar') barVals.push(v);
+        else lineVals.push(v);
+      }
+    });
+  });
+
+  // Escalas
+  const W=960,H=300,padL=65,padR=65,padT=24,padB=40;
+  const plotW=W-padL-padR, plotH=H-padT-padB;
+
+  const barMin=barVals.length?Math.min(0,Math.min(...barVals)):0;
+  const barMax=barVals.length?Math.max(...barVals)*1.12:100;
+  const barRange=(barMax-barMin)||1;
+  const lineMin=lineVals.length?Math.min(0,Math.min(...lineVals)):0;
+  const lineMax=lineVals.length?Math.max(...lineVals)*1.08:100;
+  const lineRange=(lineMax-lineMin)||1;
+
+  const yBarScale=v=>padT+plotH-((v-barMin)/barRange)*plotH;
+  const yLineScale=v=>padT+plotH-((v-lineMin)/lineRange)*plotH;
+  // Se não houver barras, linhas usam o eixo esquerdo como escala única
+  const yScale=(m,v)=>m._axis==='bar'||!barVals.length&&!lineVals.length
+    ?yBarScale(v)
+    :m._axis==='line'?yLineScale(v):yBarScale(v);
+
+  const nSlots=monthsToShow.length;
+  const slotW=plotW/nSlots;
+  const xCenter=idx=>padL+idx*slotW+slotW/2;
+
+  let svgInner='';
+
+  // Grid lines
+  for(let g=0;g<=4;g++){
+    const y=padT+(plotH/4)*g;
+    svgInner+=`<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="var(--bd)" stroke-width="1"/>`;
+    if(barVals.length){
+      const val=barMax-((barMax-barMin)/4)*g;
+      svgInner+=`<text x="${padL-8}" y="${y+4}" text-anchor="end" font-size="8" fill="var(--tx3)" font-weight="600">${val>=1000?(val/1000).toFixed(1)+'k':val.toFixed(val<10?1:0)}</text>`;
+    }
+    if(lineVals.length){
+      const val=lineMax-((lineMax-lineMin)/4)*g;
+      svgInner+=`<text x="${W-padR+8}" y="${y+4}" text-anchor="start" font-size="8" fill="var(--tx3)" font-weight="600">${val.toFixed(1)}</text>`;
+    }
+  }
+
+  // Meses no eixo X
+  monthsToShow.forEach((mo,idx)=>{
+    svgInner+=`<text x="${xCenter(idx)}" y="${H-10}" text-anchor="middle" font-size="9" fill="var(--tx3)" font-weight="700">${MONTHS[mo].substring(0,3)}</text>`;
+  });
+
+  // ── BARRAS ──
+  const nBars=barMetrics.length||1;
+  const barTotalW=slotW*0.65;
+  const barW=Math.min(barTotalW/nBars,30);
+  const barOff=(idx)=>-((nBars*barW)/2)+idx*barW;
+  const yZero=yBarScale(0);
+
+  barMetrics.forEach((m,bi)=>{
+    const color=COMBO_COLORS[m._ci].c;
+    monthsToShow.forEach((mo,mi)=>{
+      const v=pn(m.mons[mo]);
+      if(v===null) return;
+      const x=xCenter(mi)+barOff(bi);
+      const y=yBarScale(v);
+      const h=Math.abs(yZero-y);
+      const yTop=v>=0?y:yZero;
+      svgInner+=`<rect x="${x}" y="${yTop}" width="${barW-2}" height="${h}" rx="3" fill="${color}" opacity="0.75"/>`;
+      svgInner+=`<text x="${x+barW/2-1}" y="${yTop-4}" text-anchor="middle" font-size="7" fill="${color}" font-weight="700">${v>=1000?(v/1000).toFixed(1)+'k':v%1===0?v:v.toFixed(1)}</text>`;
+    });
+  });
+
+  // ── LINHAS ──
+  lineMetrics.forEach(m=>{
+    const color=COMBO_COLORS[m._ci].c;
+    const pts=[];
+    monthsToShow.forEach((mo,mi)=>{
+      const v=pn(m.mons[mo]);
+      if(v!==null) pts.push({x:xCenter(mi),y:yLineScale(v),v,mo});
+    });
+    if(pts.length>=2){
+      const pathD=pts.map((p,i)=>`${i===0?'M':'L'} ${p.x} ${p.y}`).join(' ');
+      svgInner+=`<path d="${pathD}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>`;
+    }
+    pts.forEach(p=>{
+      svgInner+=`<circle cx="${p.x}" cy="${p.y}" r="5" fill="${color}" stroke="var(--sur)" stroke-width="2"/>`;
+      svgInner+=`<text x="${p.x}" y="${p.y-10}" text-anchor="middle" font-size="8" fill="${color}" font-weight="700">${p.v%1===0?p.v:p.v.toFixed(1)}</text>`;
+    });
+  });
+
+  // Eixos labels
+  if(barVals.length){
+    svgInner+=`<text x="${padL-4}" y="${padT-6}" text-anchor="end" font-size="7" fill="var(--ac)" font-weight="800">◀ EIXO BARRA</text>`;
+  }
+  if(lineVals.length){
+    svgInner+=`<text x="${W-padR+4}" y="${padT-6}" text-anchor="start" font-size="7" fill="#a78bfa" font-weight="800">EIXO LINHA ▶</text>`;
+  }
+
+  svgArea.innerHTML=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block">${svgInner}</svg>`;
+
+  // Legenda
+  legendEl.innerHTML=metrics.map(m=>{
+    const color=COMBO_COLORS[m._ci].c;
+    const displayName=m.ind==='Turnover'?'C.P (Coeficiente de Perda)':m.ind;
+    const isLine=m._axis==='line';
+    const shape=isLine
+      ?`<span class="combo-legend-line" style="background:${color}"></span>`
+      :`<span class="combo-legend-bar" style="background:${color}"></span>`;
+    return`<div class="combo-legend-item">${shape}${displayName} (${isLine?'Linha':'Barra'})</div>`;
+  }).join('');
+}
+
+// Inicializa o combo quando dados estão carregados
+function initCombo(){
+  buildComboDropdown();
+  renderCombo();
+}
+
+// ── FETCH SHEETS ──────────────────────────────────────────────
+async function fetchData(){
+  try{
+    const r=await fetch(SHEET);if(!r.ok)throw new Error(r.status);
+    const rows=parseCSV(await r.text());
+    const inds=buildInds(rows);if(!inds.length)throw new Error('vazio');
+    INDS=inds;fin(false);
+  }catch(e){console.warn('Sheets offline:',e.message);fallback();}
+}
+
+function fin(isFb){
+  const n=new Date(),C=cm();
+  document.getElementById('plb').textContent=MONTHS[C]+' '+n.getFullYear();
+  document.getElementById('upd').textContent=n.toLocaleString('pt-BR')+(isFb?' · (exemplo)':'');
+  renderGrid();updSum();initCombo();
+}
+
+function fallback(){
+  // ══════════════════════════════════════════════════════════════
+  // GERADOR DE DADOS ALEATÓRIOS — apenas para esta versão de TESTE.
+  // O HTML permanece pronto para puxar da planilha real (SHEET acima);
+  // este bloco só ativa quando o fetch ao Google Sheets falha.
+  // ══════════════════════════════════════════════════════════════
+
+  // Definição-base de cada indicador: [sub, nome, referência, meta]
+  const base=[
+    ['DHO','Colaboradores em PDI','Atinge (verde) se indicador é maior que a meta',20,'int'],
+    ['DHO','TMV (Tempo Médio de Venda)','Atinge (verde) se indicador é menor que a meta',30,'int'],
+    ['DHO','Horas de Treinamento','Atinge (verde) se indicador é maior que a meta',6,'int'],
+    ['DHO','Posições Críticas com Sucessores (%)','Atinge (verde) se indicador é maior que a meta',85,'pct'],
+    ['Qualidade','Produtividade Mensal','Atinge (verde) se indicador é maior que a meta',120,'int'],
+    ['Qualidade','Conformidade de Processos (%)','Atinge (verde) se indicador é maior que a meta',90,'pct'],
+    ['Qualidade','Resgate de Vendas','Atinge (verde) se indicador é maior que a meta',35000,'money'],
+    ['Endomarketing','eNPS','Atinge (verde) se indicador é maior que a meta',50,'int'],
+    ['Endomarketing','Cultura (Indicador Geral)','Atinge (verde) se indicador é maior que a meta',4,'dec'],
+    ['Endomarketing','Cultura (Favorabilidade)','Atinge (verde) se indicador é maior que a meta',75,'pct'],
+    ['Endomarketing','Nível de Energia','Atinge (verde) se indicador é maior que a meta',4.5,'dec'],
+    ['DP','Turnover','Atinge (verde) se indicador é menor que a meta',8,'pct'],
+    ['DP','Absenteísmo','Atinge (verde) se indicador é menor que a meta',15,'pct'],
+    ['DP','Advertências Aplicadas','Atinge (verde) se indicador é menor que a meta',8,'int'],
+    ['R&S','SLA de Contratação','Atinge (verde) se indicador é menor que a meta',15,'int'],
+    ['R&S','Custo de Contratação','Atinge (verde) se indicador é menor que a meta',100,'pct'],
+    ['Geral','ROI','Atinge (verde) se indicador é maior que a meta',3,'dec'],
+  ];
+
+  // Padrões de tendência forçados, na ordem dos indicadores acima,
+  // para garantir que o teste cubra todos os cenários pedidos:
+  // 'up'   = melhora consistente | 'down' = piora consistente
+  // 'osc'  = oscila sem padrão    | 'mix'  = aleatório livre
+  const patterns=['up','down','osc','mix','up','down','osc','mix','up','down','osc','mix','up','down','osc','mix','up'];
+
+  function fmt(val,type){
+    if(type==='pct') return val.toFixed(2).replace('.',',')+'%';
+    if(type==='money') return 'R$ '+val.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+    if(type==='dec') return val.toFixed(2).replace('.',',');
+    return String(Math.round(val));
+  }
+
+  function genSeries(meta,type,pattern,nMonths){
+    // Gera nMonths valores ao redor da meta, seguindo o padrão pedido
+    const vals=[];
+    let cur = meta * (0.85 + Math.random()*0.3); // começa entre 85%-115% da meta
+    for(let m=0;m<nMonths;m++){
+      if(pattern==='up'){
+        cur = cur * (1 + (0.03 + Math.random()*0.05)); // sempre sobe ~3-8%
+      } else if(pattern==='down'){
+        cur = cur * (1 - (0.03 + Math.random()*0.05)); // sempre cai ~3-8%
+      } else if(pattern==='osc'){
+        cur = cur * (1 + (Math.random()-0.5)*0.22); // sobe/desce sem padrão
+      } else { // mix
+        cur = meta * (0.7 + Math.random()*0.6); // solto, pode ficar bem acima ou abaixo
+      }
+      if(cur<0) cur=Math.abs(cur);
+      vals.push(cur);
+    }
+    return vals;
+  }
+
+  const C=cm(); // mês atual (0-indexed)
+  const nMonths=C+1; // de janeiro até o mês atual
+
+  const raw=base.map((b,bi)=>{
+    const [sub,nome,ref,meta,type]=b;
+    const pattern=patterns[bi]||'mix';
+    const series=genSeries(meta,type,pattern,nMonths);
+    const monthStrs=series.map(v=>fmt(v,type));
+    // acumulado: soma para 'int'/'money', média para 'pct'/'dec'
+    let acumVal;
+    if(type==='int'||type==='money'){
+      acumVal=series.reduce((a,v)=>a+v,0);
+    } else {
+      acumVal=series.reduce((a,v)=>a+v,0)/series.length;
+    }
+    const metaStr=fmt(meta,type);
+    const acumStr=fmt(acumVal,type);
+    // monta as 12 colunas de mês (jan..dez), preenchendo só até o mês atual
+    const monthCols=Array.from({length:12},(_,m)=>m<nMonths?monthStrs[m]:'');
+    return [sub,nome,ref,metaStr,acumStr,...monthCols];
+  });
+
+  INDS=buildInds(raw);
+  fin(true);
+}
+
+// ── INIT ──────────────────────────────────────────────────────
+initFirebase();
+fetchData();
+setInterval(fetchData,5*60*1000);
+</script>
+</body>
+</html>
