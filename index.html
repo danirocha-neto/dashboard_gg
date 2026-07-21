@@ -822,6 +822,21 @@ function stCalc(val,meta,ref,name){
     const r=val/meta;if(r<=1)return 'g';if(r<=1.15)return 'y';return 'r';
   }
 }
+
+// ── LÓGICA ESPECIAL PARA C.P (TURNOVER) ──────────────────────────
+// Este indicador só tem 2 estados (verde/vermelho, sem amarelo) e sua
+// cor é SEMPRE baseada no valor ACUMULADO do ano, não no mês avaliado.
+function isTurnoverInd(ind){ return (ind||'').toLowerCase()==='turnover'; }
+
+function statusFor(ind,val,meta,ref,aNum){
+  if(isTurnoverInd(ind)){
+    if(aNum===null||meta===null) return 'n';
+    const bigger=(ref||'').toLowerCase().includes('maior');
+    const within = bigger ? (aNum>=meta) : (aNum<=meta);
+    return within ? 'g' : 'r';
+  }
+  return stCalc(val,meta,ref,ind);
+}
 const SL={g:'↑ Meta',y:'⚠ Atenção',r:'↓ Crítico',n:'N/D'};
 const SC={g:'sg',y:'sy',r:'sr',n:''};
 const ST_CLS={aguardando:'aguardando',andamento:'andamento',concluido:'concluido',cancelado:'cancelado'};
@@ -845,10 +860,10 @@ function buildInds(raw){
       const sub=r[0].trim(),ind=r[1].trim(),ref=r[2]||'',mS=r[3]||'',aS=r[4]||'';
       const mons=r.slice(5,17).map(v=>(v||'').trim());
       const mN=pn(mS),cS=mons[C]||'',pS=mons[P]||'';
-      const cN=pn(cS),pN=pn(pS);
-      const status=stCalc(pN,mN,ref,ind);
-      const curSt=stCalc(cN,mN,ref,ind);
-      return{sub,ind,ref,mS,mN,aS,cS,pS,cN,pN,status,curSt,mons};
+      const cN=pn(cS),pN=pn(pS),aN=pn(aS);
+      const status=statusFor(ind,pN,mN,ref,aN);
+      const curSt=statusFor(ind,cN,mN,ref,aN);
+      return{sub,ind,ref,mS,mN,aS,aN,cS,pS,cN,pN,status,curSt,mons};
     });
 }
 
@@ -892,7 +907,7 @@ function effectiveStatus(i){
   const monthsArr=[...selectedMonths];
   if(monthsArr.length===1){
     const v=pn(i.mons[monthsArr[0]]);
-    return stCalc(v,i.mN,i.ref,i.ind);
+    return statusFor(i.ind,v,i.mN,i.ref,i.aN);
   }
   let sum=0,count=0;
   monthsArr.forEach(m=>{
@@ -900,7 +915,7 @@ function effectiveStatus(i){
     if(v!==null){sum+=v;count++;}
   });
   const avg = count>0 ? sum/count : null;
-  return stCalc(avg,i.mN,i.ref,i.ind);
+  return statusFor(i.ind,avg,i.mN,i.ref,i.aN);
 }
 
 function updSum(){
@@ -1224,7 +1239,7 @@ function renderCardMonthFilter(i){
     const m=monthsArr[0];
     const valStr=i.mons[m]||'';
     const valNum=pn(valStr);
-    const st=stCalc(valNum,i.mN,i.ref,i.ind);
+    const st=statusFor(i.ind,valNum,i.mN,i.ref,i.aN);
     const sc=SC[st]||'';
     const mLbl=MONTHS[m].substring(0,3)+' / '+yr;
     const needP=(st==='r'||st==='y');
@@ -1255,7 +1270,7 @@ function renderCardMonthFilter(i){
   }).join('');
 
   const avg = count>0 ? (sum/count) : null;
-  const avgStatus = stCalc(avg,i.mN,i.ref,i.ind);
+  const avgStatus = statusFor(i.ind,avg,i.mN,i.ref,i.aN);
   const sc=SC[avgStatus]||'';
   const avgDisplay = avg!==null ? avg.toLocaleString('pt-BR',{maximumFractionDigits:2}) : '—';
   const needP=(avgStatus==='r'||avgStatus==='y');
@@ -1289,7 +1304,7 @@ function renderGraphCard(i){
 
   // status do card = baseado no último ponto disponível
   const lastVal = points.length ? points[points.length-1].v : null;
-  const st=stCalc(lastVal,metaVal,i.ref,i.ind);
+  const st=statusFor(i.ind,lastVal,metaVal,i.ref,i.aN);
   const sc=SC[st]||'';
   const displayName = i.ind === 'Turnover' ? 'C.P (Coeficiente de Perda)' : i.ind;
   const trendHtml=renderTrendArrow(i);
@@ -1321,7 +1336,7 @@ function renderGraphCard(i){
     // pontos + labels — cor de cada bolinha reflete o status DAQUELE mês específico
     points.forEach((p,idx)=>{
       const x=xScale(idx),y=yScale(p.v);
-      const pSt=stCalc(p.v,metaVal,i.ref,i.ind);
+      const pSt=statusFor(i.ind,p.v,metaVal,i.ref,i.aN);
       const pColor = pSt==='g'?'var(--g)':pSt==='y'?'var(--y)':pSt==='r'?'var(--r)':'var(--ac)';
       svgInner+=`<circle cx="${x}" cy="${y}" r="5" fill="${pColor}" stroke="var(--sur)" stroke-width="2"/>`;
       svgInner+=`<text x="${x}" y="${H-8}" text-anchor="middle" font-size="8" fill="var(--tx3)" font-weight="600">${MONTHS[p.m].substring(0,3)}</text>`;
@@ -1589,7 +1604,7 @@ window.openMo=function(indKey){
   let hR='';
   for(let m=0;m<12;m++){
     const v=i.mons[m];if(!v)continue;
-    const s2=stCalc(pn(v),i.mN,i.ref,i.ind);
+    const s2=statusFor(i.ind,pn(v),i.mN,i.ref,i.aN);
     const cls=s2==='g'?'vg':s2==='y'?'vy':s2==='r'?'vr':'';
     const hl=m===C?` style="background:var(--sur2)"`:'';
     // planos desse mês
@@ -1909,42 +1924,11 @@ function initCombo(){
   renderCombo();
 }
 
-// ── DADOS PRÉ-CARREGADOS (2026-07-21T13:09:04.942Z) ──
-const PRELOADED_CSV = `SUBSISTEMA,INDICADOR,REFERÊNCIA DA META,META,ACUMULADO,JANEIRO,FEVEREIRO,MARÇO,ABRIL,MAIO,JUNHO,JULHO,AGOSTO,SETEMBRO,OUTUBRO,NOVEMBRO,DEZEMBRO
-DHO,Colaboradores em PDI,Atinge (verde) se indicador é maior que a meta,20,53,-,39,56,63,,,,,,,,
-DHO,TMV (Tempo Médio de Venda),Atinge (verde) se indicador é menor que a meta,30,-,-,-,-,-,-,,,,,,,
-DHO,Horas de Treinamento,Atinge (verde) se indicador é maior que a meta,6,"8,82",7,11,8,"10,03","9,6","7,29",,,,,,
-DHO,Posições Críticas com Sucessores (%),Atinge (verde) se indicador é maior que a meta,"85,00%",-%,-%,-%,-%,-%,-%,-%,,,,,,
-Qualidade,Produtividade Mensal,Atinge (verde) se indicador é maior que a meta,120,137,-%,-%,-%,133,137,141,,,,,,
-Qualidade,Conformidade de Processos (%),Atinge (verde) se indicador é maior que a meta,90%,90%,98%,90%,89%,"92,10%","89,26%","80,60%",,,,,,
-Qualidade,Resgate de Vendas,Atinge (verde) se indicador é maior que a meta,"R\$ 35.000,00","R\$ 368.000,00","R\$ 12.000,00","R\$ 48.000,00","R\$ 48.000,00",-,"R\$ 180.000,00","R\$ 80.000,00",,,,,,
-Endomarketing,eNPS,Atinge (verde) se indicador é maior que a meta,50,"30,40","31,2","31,2",30,30,30,30,,,,,,
-Endomarketing,Cultura (Indicador Geral),Atinge (verde) se indicador é maior que a meta,4,"4,20",-%,-%,"4,2","4,2","4,2","4,2",,,,,,
-Endomarketing,Cultura (Favorabilidade),Atinge (verde) se indicador é maior que a meta,75%,79%,-%,-%,79%,79%,79%,79%,,,,,,
-Endomarketing,Nível de Energia,Atinge (verde) se indicador é maior que a meta,"4,5","4,57","4,5","4,3","4,6","4,7","4,66","4,66",,,,,,
-DP,Turnover,Atinge (verde) se indicador é menor que a meta,8%,"8,13%","11,60%","15,14%","7,79%","8,31%","2,05%","3,87%",,,,,,
-DP,Absenteísmo,Atinge (verde) se indicador é menor que a meta,"15,00%","0,00%",0,0,0,0,0,0,,,,,,
-DP,Advertências Aplicadas,Atinge (verde) se indicador é menor que a meta,8,-,-,-,-,-,-,-,,,,,,
-R&S,SLA de Contratação,Atinge (verde) se indicador é menor que a meta,15,"12,33",17,7,6,22,10,12,,,,,,
-R&S,Custo de Contratação,Atinge (verde) se indicador é menor que a meta,100%,"40,46%",64%,49%,68%,"34,04","27,75%","33,06%",,,,,,
-R&S,Taxa de Eficiência,Atinge (verde) se indicador é maior que a meta,"75,00%","73,03%","78,50%","60,00%","83,30%","63,6%","75,00%","77,80%",,,,,,
-R&S,Curriculo Captados,Atinge (verde) se indicador é maior ou igual a meta,100%,"369,43%","443,89%","301,36%","271,33%","616,67%","180,00%","403,33%",,,,,,
-R&S,Performance dos Contratados,Atinge (verde) se indicador é maior ou igual a meta,85%,,,,,,,,,,,,,
-Geral,ROI,Atinge (verde) se indicador é maior que a meta,"3,00","4,96","1,828","4,563","12,277","2,696","4,385",4,,,,,,`;
-const PRELOADED_TS = "2026-07-21T13:09:04.942Z";
-
 // ── FETCH SHEETS ──────────────────────────────────────────────
 async function fetchData(){
   try{
-    let csvData;
-    if(typeof PRELOADED_CSV!=='undefined'&&PRELOADED_CSV.trim().length>0){
-      console.log('📦 Usando dados pré-carregados de',PRELOADED_TS);
-      csvData=PRELOADED_CSV;
-    } else {
-      const r=await fetch(SHEET);if(!r.ok)throw new Error(r.status);
-      csvData=await r.text();
-    }
-    const rows=parseCSV(csvData);
+    const r=await fetch(SHEET);if(!r.ok)throw new Error(r.status);
+    const rows=parseCSV(await r.text());
     const inds=buildInds(rows);if(!inds.length)throw new Error('vazio');
     INDS=inds;fin(false);
   }catch(e){console.warn('Sheets offline:',e.message);fallback();}
