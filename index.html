@@ -86,10 +86,19 @@ body{
 .card.sg{border-color:var(--gbd);box-shadow:0 0 0 1px var(--gbd) inset}
 .card.sy{border-color:var(--ybd);box-shadow:0 0 0 1px var(--ybd) inset}
 .card.sr{border-color:var(--rbd);box-shadow:0 0 0 1px var(--rbd) inset}
+.card.sn{border-color:var(--bd2);box-shadow:0 0 0 1px var(--bd2) inset}
 .card-bar{height:3px}
 .sg .card-bar{background:linear-gradient(90deg,var(--g),rgba(30,217,122,.05))}
 .sy .card-bar{background:linear-gradient(90deg,var(--y),rgba(245,200,64,.05))}
 .sr .card-bar{background:linear-gradient(90deg,var(--r),rgba(240,69,96,.05))}
+.sn .card-bar{background:linear-gradient(90deg,var(--tx3),rgba(255,255,255,.03))}
+.badge-neutral{background:var(--sur3);color:var(--tx3);border:1px solid var(--bd2)}
+.cphi-block{padding:2px 0}
+.cphi-block-title{
+  font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;
+  color:var(--ac);padding:8px 0 2px;
+}
+.cphi-divider{height:1px;background:var(--bd);margin:2px 0}
 .ch{padding:14px 15px 0;display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
 .ch-l{flex:1;min-width:0}
 .tag{display:inline-block;font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;padding:2px 7px;border-radius:4px;background:var(--sur3);border:1px solid var(--bd2);color:var(--ac);margin-bottom:6px}
@@ -869,8 +878,38 @@ function buildInds(raw){
 
 // ── FILTROS ───────────────────────────────────────────────────
 // ── INDICADORES CHAVE
-const INDICADORES_CHAVE=['SLA de Contratação','Custo de Contratação','Turnover','Horas de Treinamento','Conformidade de Processos (%)','eNPS','ROI'];
+const CPHI_NAME='CPHI - Indicador de Saúde Cultura';
+const INDICADORES_CHAVE=['SLA de Contratação','Custo de Contratação','Turnover','Horas de Treinamento','Conformidade de Processos (%)','eNPS','ROI',CPHI_NAME];
 function isChave(i){ return INDICADORES_CHAVE.some(n=>i.ind.toLowerCase()===n.toLowerCase()); }
+
+// ── CPHI — Indicador de Saúde Cultura ─────────────────────────────
+// Indicador manual, sem base de dados/planilha vinculada nesta etapa.
+// Não possui histórico mensal nem cor de status — apenas 2 sub-métricas
+// fixas (Alta Cultura / Alta Performance) com meta e "mês anterior".
+function makeCphiIndicator(){
+  return {
+    sub:'Geral',
+    ind:CPHI_NAME,
+    ref:'',
+    mS:'',mN:null,aS:'',aN:null,cS:'',pS:'',cN:null,pN:null,
+    status:'n',curSt:'n',
+    mons:new Array(12).fill(''),
+    isCphi:true,
+    cphi:{
+      altaCultura:{ meta:80, prevValue:null },
+      altaPerformance:{ meta:75, prevValue:null }
+    }
+  };
+}
+
+// ROI sempre primeiro, CPHI sempre segundo — independente de filtro ou ordem original
+function sortIndsPriority(arr){
+  return [...arr].sort((a,b)=>{
+    const pa = a.ind==='ROI' ? 0 : (a.isCphi ? 1 : 2);
+    const pb = b.ind==='ROI' ? 0 : (b.isCphi ? 1 : 2);
+    return pa-pb; // sort estável: mantém ordem original entre indicadores de mesma prioridade
+  });
+}
 
 function getUniqueSubs(){return[...new Set(INDS.map(i=>i.sub))]}
 
@@ -889,7 +928,8 @@ window.toggleSF=function(s){
 function applyFilters(){
   let res=INDS;
   if(selectedInds.size>0){
-    res=res.filter(i=>selectedInds.has(makeIndKey(i)));
+    // ROI e CPHI são fixos — sempre aparecem, independente da seleção de indicadores
+    res=res.filter(i=>selectedInds.has(makeIndKey(i))||i.ind==='ROI'||i.isCphi);
   }
   if(activeSF){
     if(activeSF==='p') res=res.filter(i=>countPlans(i)>0);
@@ -1183,15 +1223,50 @@ function renderGrid(){
     return;
   }
 
+  const ordered=sortIndsPriority(filtered); // ROI 1º, CPHI 2º, sempre
+
   if(graphMode){
-    document.getElementById('dash').innerHTML=filtered.map(i=>renderGraphCard(i)).join('');
+    document.getElementById('dash').innerHTML=ordered.map(i=>i.isCphi?renderCphiCard(i):renderGraphCard(i)).join('');
   } else if(selectedMonths.size>0){
-    document.getElementById('dash').innerHTML=filtered.map(i=>renderCardMonthFilter(i)).join('');
+    document.getElementById('dash').innerHTML=ordered.map(i=>i.isCphi?renderCphiCard(i):renderCardMonthFilter(i)).join('');
   } else {
-    document.getElementById('dash').innerHTML=filtered.map(i=>renderCard(i,P,C)).join('');
+    document.getElementById('dash').innerHTML=ordered.map(i=>i.isCphi?renderCphiCard(i):renderCard(i,P,C)).join('');
   }
   updSum();
   if(comboSelected.length>=2) renderCombo(); // atualiza combo chart quando filtros mudam
+}
+
+// ── CARD CPHI (indicador manual, sem base de dados) ───────────────
+function renderCphiCard(i){
+  const indKey=makeIndKey(i);
+  const P=pm();
+  const yr=curYr();
+  const pLbl=MONTHS[P].substring(0,3)+' / '+yr;
+  const c=i.cphi;
+  const acVal = c.altaCultura.prevValue!==null ? c.altaCultura.prevValue+'%' : '—';
+  const apVal = c.altaPerformance.prevValue!==null ? c.altaPerformance.prevValue+'%' : '—';
+
+  return`<div class="card sn" id="card-${indKey}">
+  <div class="card-bar"></div>
+  <div class="ch">
+    <div class="ch-l"><div class="tag">${i.sub}</div><div class="cname">${i.ind}</div></div>
+    <div class="ch-r"><div class="ch-r-statusline"><div class="badge badge-neutral">Indicador Manual</div></div></div>
+  </div>
+  <div class="rows">
+    <div class="cphi-block">
+      <div class="cphi-block-title">Alta Cultura</div>
+      <div class="row meta"><div class="row-left"><div class="rl">Meta</div></div><div class="rv">${c.altaCultura.meta}%</div></div>
+      <div class="row prev"><div class="row-left"><div class="rl">${pLbl}</div><div class="rs">Mês anterior</div></div><div class="rv">${acVal}</div></div>
+    </div>
+    <div class="cphi-divider"></div>
+    <div class="cphi-block">
+      <div class="cphi-block-title">Alta Performance</div>
+      <div class="row meta"><div class="row-left"><div class="rl">Meta</div></div><div class="rv">${c.altaPerformance.meta}%</div></div>
+      <div class="row prev"><div class="row-left"><div class="rl">${pLbl}</div><div class="rs">Mês anterior</div></div><div class="rv">${apVal}</div></div>
+    </div>
+  </div>
+  <div class="cf"><button class="btn-ap" onclick="openMo('${indKey}')">⊞ Aprofundar</button></div>
+</div>`;
 }
 
 // ── CARD PADRÃO (sem filtro de mês) ───────────────────────────────
@@ -1595,9 +1670,47 @@ window.addPl=async function(indKey,plKey){
 window.delPl=async function(key,idx){await deletePlano(key,idx);};
 window.updSt=async function(key,idx,newSt){await updateStatus(key,idx,newSt);};
 
+// ── MODAL SIMPLIFICADO PARA CPHI (sem histórico/planos) ───────────
+function openMoCphi(i){
+  const pLbl=MONTHS[pm()].substring(0,3)+' / '+curYr();
+  const c=i.cphi;
+  const acVal = c.altaCultura.prevValue!==null ? c.altaCultura.prevValue+'%' : '—';
+  const apVal = c.altaPerformance.prevValue!==null ? c.altaPerformance.prevValue+'%' : '—';
+
+  document.getElementById('mi').innerHTML=`
+    <div class="mt">${i.sub}</div>
+    <div class="mtt">${i.ind}</div>
+    <div class="mrf">Indicador manual — sem base de dados vinculada nesta etapa</div>
+    <div class="msec">Composição do Indicador</div>
+    <div class="mpl">
+      <div class="mpc">
+        <div class="mph"><span class="mpn">Alta Cultura</span></div>
+        <div class="mpg">
+          <div class="mpf"><div class="mpfl">Meta</div><div class="mpfv">${c.altaCultura.meta}%</div></div>
+          <div class="mpf"><div class="mpfl">${pLbl}</div><div class="mpfv">${acVal}</div></div>
+        </div>
+      </div>
+      <div class="mpc">
+        <div class="mph"><span class="mpn">Alta Performance</span></div>
+        <div class="mpg">
+          <div class="mpf"><div class="mpfl">Meta</div><div class="mpfv">${c.altaPerformance.meta}%</div></div>
+          <div class="mpf"><div class="mpfl">${pLbl}</div><div class="mpfv">${apVal}</div></div>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:16px;font-size:10px;font-weight:500;color:var(--tx3);line-height:1.5">
+      Este indicador ainda não possui histórico mensal nem base de dados vinculada. Assim que a fonte de dados for definida, ele passará a exibir tendências e cores de status como os demais indicadores.
+    </div>`;
+  document.getElementById('mo').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+
 // ── MODAL ─────────────────────────────────────────────────────
 window.openMo=function(indKey){
   const i=INDS.find(x=>makeIndKey(x)===indKey);if(!i)return;
+
+  if(i.isCphi){ openMoCphi(i); return; }
+
   const C=cm();
 
   // Histórico mensal
@@ -1720,7 +1833,7 @@ function buildComboDropdown(){
   const sel=document.getElementById('combo-metric-select');
   if(!sel) return;
   let html='<option value="">+ Adicionar métrica...</option>';
-  INDS.forEach(i=>{
+  INDS.filter(i=>!i.isCphi).forEach(i=>{
     const k=makeIndKey(i);
     const already=comboSelected.some(s=>s.key===k);
     const displayName = i.ind==='Turnover'?'C.P (Coeficiente de Perda)':i.ind;
@@ -1930,6 +2043,7 @@ async function fetchData(){
     const r=await fetch(SHEET);if(!r.ok)throw new Error(r.status);
     const rows=parseCSV(await r.text());
     const inds=buildInds(rows);if(!inds.length)throw new Error('vazio');
+    inds.push(makeCphiIndicator()); // indicador manual, sem base de dados
     INDS=inds;fin(false);
   }catch(e){console.warn('Sheets offline:',e.message);fallback();}
 }
@@ -2025,6 +2139,7 @@ function fallback(){
   });
 
   INDS=buildInds(raw);
+  INDS.push(makeCphiIndicator()); // indicador manual, sem base de dados
   fin(true);
 }
 
