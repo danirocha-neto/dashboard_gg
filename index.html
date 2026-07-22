@@ -2037,6 +2037,31 @@ function initCombo(){
   renderCombo();
 }
 
+// ── DADOS PRÉ-CARREGADOS (2026-07-22T12:43:47.413Z) ──
+const PRELOADED_CSV = `SUBSISTEMA,INDICADOR,REFERÊNCIA DA META,META,ACUMULADO,JANEIRO,FEVEREIRO,MARÇO,ABRIL,MAIO,JUNHO,JULHO,AGOSTO,SETEMBRO,OUTUBRO,NOVEMBRO,DEZEMBRO
+DHO,Colaboradores em PDI,Atinge (verde) se indicador é maior que a meta,20,53,-,39,56,63,,,,,,,,
+DHO,TMV (Tempo Médio de Venda),Atinge (verde) se indicador é menor que a meta,30,-,-,-,-,-,-,,,,,,,
+DHO,PDI Upskill,Atinge (verde) se indicador é menor que a meta,"R\$ 200.000,00","R\$ 63.000,00",-,-,-,-,-,"R\$ 63.000,00",,,,,,
+DHO,Horas de Treinamento,Atinge (verde) se indicador é maior que a meta,6,"8,82",7,11,8,"10,03","9,6","7,29",,,,,,
+DHO,Posições Críticas com Sucessores (%),Atinge (verde) se indicador é maior que a meta,"85,00%",-%,-%,-%,-%,-%,-%,-%,,,,,,
+Qualidade,Produtividade Mensal,Atinge (verde) se indicador é maior que a meta,120,137,-%,-%,-%,133,137,141,,,,,,
+Qualidade,Conformidade de Processos (%),Atinge (verde) se indicador é maior que a meta,90%,90%,98%,90%,89%,"92,10%","89,26%","80,60%",,,,,,
+Qualidade,Resgate de Vendas,Atinge (verde) se indicador é maior que a meta,"R\$ 35.000,00","R\$ 368.000,00","R\$ 12.000,00","R\$ 48.000,00","R\$ 48.000,00",-,"R\$ 180.000,00","R\$ 80.000,00",,,,,,
+Endomarketing,eNPS,Atinge (verde) se indicador é maior que a meta,50,"30,40","31,2","31,2",30,30,30,30,,,,,,
+Endomarketing,Cultura (Indicador Geral),Atinge (verde) se indicador é maior que a meta,4,"4,20",-%,-%,"4,2","4,2","4,2","4,2",,,,,,
+Endomarketing,Cultura (Favorabilidade),Atinge (verde) se indicador é maior que a meta,75%,79%,-%,-%,79%,79%,79%,79%,,,,,,
+Endomarketing,Nível de Energia,Atinge (verde) se indicador é maior que a meta,"4,5","4,57","4,5","4,3","4,6","4,7","4,66","4,66",,,,,,
+DP,Turnover,Atinge (verde) se indicador é menor que a meta,8%,"8,13%","11,60%","15,14%","7,79%","8,31%","2,05%","3,87%",,,,,,
+DP,Absenteísmo,Atinge (verde) se indicador é menor que a meta,"15,00%","0,00%",0,0,0,0,0,0,,,,,,
+DP,Advertências Aplicadas,Atinge (verde) se indicador é menor que a meta,8,-,-,-,-,-,-,-,,,,,,
+R&S,SLA de Contratação,Atinge (verde) se indicador é menor que a meta,15,"12,33",17,7,6,22,10,12,,,,,,
+R&S,Custo de Contratação,Atinge (verde) se indicador é menor que a meta,100%,"40,46%",64%,49%,68%,"34,04","27,75%","33,06%",,,,,,
+R&S,Taxa de Eficiência,Atinge (verde) se indicador é maior que a meta,"75,00%","73,03%","78,50%","60,00%","83,30%","63,6%","75,00%","77,80%",,,,,,
+R&S,Curriculo Captados,Atinge (verde) se indicador é maior ou igual a meta,100%,"369,43%","443,89%","301,36%","271,33%","616,67%","180,00%","403,33%",,,,,,
+R&S,Performance dos Contratados,Atinge (verde) se indicador é maior ou igual a meta,85%,,,,,,,,,,,,,
+Geral,ROI,Atinge (verde) se indicador é maior que a meta,"3,00","3,34","0,416","4,563","3,48","1,868","4,385","5,351",,,,,,`;
+const PRELOADED_TS = "2026-07-22T12:43:47.413Z";
+
 // ── FETCH SHEETS ──────────────────────────────────────────────
 async function fetchData(){
   try{
